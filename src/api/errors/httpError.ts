@@ -1,12 +1,11 @@
-export class HttpError extends Error {
-  public readonly status: number;
+import { ApiError } from "./apiError";
 
-  constructor(status: number, message: string) {
-    super(message);
+export class HttpError extends ApiError {
+  public status: number;
 
-    this.status = status;
+  constructor(status: number, message: string, url: string) {
+    super(message, url);
     this.name = "HttpError";
-
-    Object.setPrototypeOf(this, new.target.prototype);
+    this.status = status;
   }
 }

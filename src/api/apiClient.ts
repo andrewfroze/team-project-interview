@@ -1,4 +1,4 @@
-import type { Product, ProductCards } from "../types/product";
+import type { Product, ProductCards } from "../models/product";
 import { request } from "./request";
 import { isProduct, isProductCards } from "./validators/productValidator";
 

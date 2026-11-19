@@ -1,7 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { fetchProductDetails } from "../../src/api/apiClient";
 import { HttpError } from "../../src/api/errors/httpError";
-import type { Product } from "../../src/types/product";
+import type { Product } from "../../src/models/product";
+import { ApiError } from "../../src/api/errors/apiError";
+import { NetworkError } from "../../src/api/errors/networkError";
 
 describe("fetchProductDetails", () => {
   const mockProduct: Product = {
@@ -116,11 +118,20 @@ describe("fetchProductDetails", () => {
     expect(options.signal).toBeInstanceOf(AbortSignal);
   });
 
-  it("should propagate network errors", async () => {
-    const error = new Error("Network error");
+  it("should throw ApiError when response contains invalid JSON", async () => {
+    vi.spyOn(globalThis, "fetch").mockResolvedValue({
+      ok: true,
+      json: vi.fn().mockRejectedValue(new SyntaxError("Unexpected token")),
+    } as unknown as Response);
+
+    await expect(fetchProductDetails(1)).rejects.toBeInstanceOf(ApiError);
+  });
+
+  it("should wrap network errors into NetworkError", async () => {
+    const error = new TypeError("Network error");
 
     mockFetch.mockRejectedValue(error);
 
-    await expect(fetchProductDetails(1)).rejects.toThrow(error);
+    await expect(fetchProductDetails(1)).rejects.toBeInstanceOf(NetworkError);
   });
 });

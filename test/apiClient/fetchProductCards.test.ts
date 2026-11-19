@@ -1,7 +1,8 @@
 import { beforeEach, afterEach, describe, expect, it, vi } from "vitest";
 import { fetchProductCards } from "../../src/api/apiClient";
 import { HttpError } from "../../src/api/errors/httpError";
-import type { ProductCards } from "../../src/types/product";
+import type { ProductCards } from "../../src/models/product";
+import { NetworkError } from "../../src/api/errors/networkError";
 
 describe("fetchProductCards", () => {
   const mockProducts: ProductCards = {
@@ -115,11 +116,11 @@ describe("fetchProductCards", () => {
     expect(options.signal).toBeInstanceOf(AbortSignal);
   });
 
-  it("should propagate network errors", async () => {
-    const error = new Error("Network error");
+  it("should wrap network errors into NetworkError", async () => {
+    const error = new TypeError("Network error");
 
     mockFetch.mockRejectedValue(error);
 
-    await expect(fetchProductCards()).rejects.toThrow(error);
+    await expect(fetchProductCards()).rejects.toBeInstanceOf(NetworkError);
   });
 });

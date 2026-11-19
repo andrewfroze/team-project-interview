@@ -1,4 +1,4 @@
-import type { Product, ProductCard, ProductCards } from "../../types/product";
+import type { Product, ProductCard, ProductCards } from "../../models/product";
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -11,7 +11,7 @@ function isStringArray(value: unknown): value is string[] {
 }
 
 function isOptionalString(value: unknown): boolean {
-  return value === undefined || typeof value === "string";
+  return value === undefined || value === null || typeof value === "string";
 }
 
 export function isProductCard(value: unknown): value is ProductCard {

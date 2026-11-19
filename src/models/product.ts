@@ -14,7 +14,7 @@ export interface ProductCard {
   rating: number;
   stock: number;
   tags: string[];
-  brand?: string;
+  brand?: string | null;
   images: string[];
 }
 
@@ -28,7 +28,7 @@ export interface Product {
   rating: number;
   stock: number;
   tags: string[];
-  brand?: string;
+  brand?: string | null;
   sku: string;
   weight: number;
   dimensions: Dimension;

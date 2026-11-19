@@ -30,13 +30,18 @@ export async function request<T>(
         throw new NetworkError(url, error);
       }
 
-      throw error;
+      throw new ApiError(
+        `Request to ${url} failed: ${String(error)}`,
+        url,
+        error,
+      );
     }
 
     if (!response.ok) {
       throw new HttpError(
         response.status,
         `Http error: ${response.statusText}`,
+        url,
       );
     }
 
