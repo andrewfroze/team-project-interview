@@ -1,7 +1,13 @@
+import { ApiError } from "./errors/apiError";
 import { HttpError } from "./errors/httpError";
+import { NetworkError } from "./errors/networkError";
 import { TimeoutError } from "./errors/timeoutError";
 
-export async function request<T>(url: string, timeout: number): Promise<T> {
+export async function request<T>(
+  url: string,
+  timeout: number,
+  validate: (data: unknown) => data is T,
+): Promise<T> {
   const controller = new AbortController();
 
   const timeoutId = setTimeout(() => {
@@ -9,9 +15,23 @@ export async function request<T>(url: string, timeout: number): Promise<T> {
   }, timeout);
 
   try {
-    const response = await fetch(url, {
-      signal: controller.signal,
-    });
+    let response: Response;
+
+    try {
+      response = await fetch(url, {
+        signal: controller.signal,
+      });
+    } catch (error) {
+      if (error instanceof Error && error.name === "AbortError") {
+        throw new TimeoutError(url, timeout);
+      }
+
+      if (error instanceof TypeError) {
+        throw new NetworkError(url, error);
+      }
+
+      throw error;
+    }
 
     if (!response.ok) {
       throw new HttpError(
@@ -20,13 +40,19 @@ export async function request<T>(url: string, timeout: number): Promise<T> {
       );
     }
 
-    return (await response.json()) as T;
-  } catch (error) {
-    if (error instanceof Error && error.name === "AbortError") {
-      throw new TimeoutError(timeout);
+    let data: unknown;
+
+    try {
+      data = await response.json();
+    } catch (error) {
+      throw new ApiError(`Invalid JSON response from ${url}`, url, error);
     }
 
-    throw error;
+    if (!validate(data)) {
+      throw new ApiError(`Invalid response structure from ${url}`, url);
+    }
+
+    return data;
   } finally {
     clearTimeout(timeoutId);
   }

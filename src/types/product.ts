@@ -14,7 +14,7 @@ export interface ProductCard {
   rating: number;
   stock: number;
   tags: string[];
-  brand: string;
+  brand?: string;
   images: string[];
 }
 
@@ -28,7 +28,7 @@ export interface Product {
   rating: number;
   stock: number;
   tags: string[];
-  brand: string;
+  brand?: string;
   sku: string;
   weight: number;
   dimensions: Dimension;
@@ -43,13 +43,13 @@ export interface Product {
   images: string[];
 }
 
-interface Dimension {
+export interface Dimension {
   width: number;
   height: number;
   depth: number;
 }
 
-interface Review {
+export interface Review {
   rating: number;
   comment: string;
   date: string;
@@ -57,7 +57,7 @@ interface Review {
   reviewerEmail: string;
 }
 
-interface Meta {
+export interface Meta {
   createdAt: string;
   updatedAt: string;
   barcode: string;

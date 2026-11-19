@@ -1,6 +1,6 @@
 export class TimeoutError extends Error {
-  constructor(timeout: number) {
-    super(`Request timed out after ${timeout} ms`);
+  constructor(url: string, timeout: number) {
+    super(`Request to ${url} timed out after ${timeout} ms`);
     this.name = "TimeoutError";
   }
 }

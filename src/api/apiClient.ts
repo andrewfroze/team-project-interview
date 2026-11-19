@@ -1,5 +1,6 @@
 import type { Product, ProductCards } from "../types/product";
 import { request } from "./request";
+import { isProduct, isProductCards } from "./validators/productValidator";
 
 const API_URL = "https://dummyjson.com/";
 const DEFAULT_TIMEOUT = 10_000;
@@ -27,12 +28,16 @@ export async function fetchProductCards(
     select: select.join(","),
   });
 
-  return request<ProductCards>(`${API_URL}products?${params}`, timeout);
+  return request<ProductCards>(
+    `${API_URL}products?${params}`,
+    timeout,
+    isProductCards,
+  );
 }
 
 export async function fetchProductDetails(
   id: number,
   timeout: number = DEFAULT_TIMEOUT,
 ): Promise<Product> {
-  return request<Product>(`${API_URL}products/${id}`, timeout);
+  return request<Product>(`${API_URL}products/${id}`, timeout, isProduct);
 }
