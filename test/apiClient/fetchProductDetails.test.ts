@@ -4,6 +4,7 @@ import { HttpError } from "../../src/api/errors/httpError";
 import type { Product } from "../../src/models/product";
 import { ApiError } from "../../src/api/errors/apiError";
 import { NetworkError } from "../../src/api/errors/networkError";
+import { TimeoutError } from "../../src/api/errors/timeoutError";
 
 describe("fetchProductDetails", () => {
   const mockProduct: Product = {
@@ -133,5 +134,13 @@ describe("fetchProductDetails", () => {
     mockFetch.mockRejectedValue(error);
 
     await expect(fetchProductDetails(1)).rejects.toBeInstanceOf(NetworkError);
+  });
+
+  it("should throw TimeoutError when request times out", async () => {
+    const error = new DOMException("The operation was aborted", "AbortError");
+
+    mockFetch.mockRejectedValue(error);
+
+    await expect(fetchProductDetails(1)).rejects.toBeInstanceOf(TimeoutError);
   });
 });
