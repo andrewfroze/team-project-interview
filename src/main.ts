@@ -1,1 +1,1 @@
-document.body.textContent = 'Project initialized';
+document.body.textContent = "Project initialized";
