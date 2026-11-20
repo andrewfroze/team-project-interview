@@ -86,7 +86,7 @@ describe("fetchProductCards", () => {
     });
 
     await expect(fetchProductCards()).rejects.toThrow(HttpError);
-    await expect(fetchProductCards()).rejects.toThrow("Http error: Not Found");
+    await expect(fetchProductCards()).rejects.toThrow("Http error: 404");
   });
 
   it("should return parsed JSON response", async () => {
