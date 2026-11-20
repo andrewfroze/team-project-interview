@@ -1,0 +1,100 @@
+.purchase-panel {
+  width: 100%;
+  padding-top: 24px;
+  border-top: 1px solid var(--color-border);
+}
+
+.purchase-panel__price {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.purchase-panel__current-price {
+  font-size: 30px;
+  font-weight: 500;
+  letter-spacing: -0.05em;
+}
+
+.purchase-panel__old-price {
+  color: var(--color-muted);
+  font-size: 14px;
+  text-decoration: line-through;
+}
+
+.purchase-panel__availability {
+  margin: 0 0 26px;
+  color: var(--color-accent);
+  font-size: 12px;
+}
+
+.purchase-panel__availability--unavailable {
+  color: #b65e50;
+}
+
+.purchase-panel__quantity {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  margin-bottom: 14px;
+}
+
+.purchase-panel__quantity-label {
+  color: var(--color-muted);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.purchase-panel__quantity-input {
+  width: 100%;
+  height: 48px;
+  padding: 0 14px;
+  border: 1px solid var(--color-border);
+  border-radius: 0;
+  background: transparent;
+  color: var(--color-text);
+  font: inherit;
+  outline: none;
+  transition: border-color 200ms ease;
+}
+
+.purchase-panel__quantity-input:focus {
+  border-color: var(--color-text);
+}
+
+.purchase-panel__add-button {
+  width: 100%;
+  min-height: 54px;
+  border: 1px solid var(--color-accent);
+  background: var(--color-accent);
+  color: white;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition:
+    background 200ms ease,
+    border-color 200ms ease;
+}
+
+.purchase-panel__add-button:hover:not(:disabled) {
+  border-color: var(--color-accent-hover);
+  background: var(--color-accent-hover);
+}
+
+.purchase-panel__add-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.purchase-panel__shipping,
+.purchase-panel__returns {
+  margin: 14px 0 0;
+  color: var(--color-muted);
+  font-size: 12px;
+  line-height: 1.7;
+}
