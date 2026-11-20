@@ -40,7 +40,7 @@ export async function request<T>(
     if (!response.ok) {
       throw new HttpError(
         response.status,
-        `Http error: ${response.statusText}`,
+        `Http error: ${response.status}`,
         url,
       );
     }

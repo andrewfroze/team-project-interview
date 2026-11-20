@@ -1,4 +1,5 @@
 import { fetchProductDetails } from "./api/apiClient";
+import { renderErrorPage } from "./pages/error-page/error-page";
 import { renderProductDetails } from "./pages/product-details";
 
 export async function start(path: string): Promise<void> {
@@ -8,7 +9,9 @@ export async function start(path: string): Promise<void> {
 
     if (productId) {
       document.body.replaceChildren(
-        await fetchProductDetails(productId).then(renderProductDetails),
+        await fetchProductDetails(productId)
+          .then(renderProductDetails)
+          .catch(renderErrorPage),
       );
     }
   } else {
