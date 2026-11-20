@@ -15,17 +15,26 @@ export function renderPurchasePanel(product: Product): HTMLElement {
     min: String(product.minimumOrderQuantity),
     max: String(product.stock),
     value: String(product.minimumOrderQuantity),
-    className: "purchase-panel__quantity",
+    className: "purchase-panel__quantity-input",
     ariaLabel: "Quantity",
   });
 
+  const quantity = createContainer("purchase-panel__quantity", [
+    createElement("label", {
+      className: "purchase-panel__quantity-label",
+      htmlFor: "purchase-quantity",
+      textContent: "Quantity",
+    }),
+    Object.assign(quantityInput, { id: "purchase-quantity" }),
+  ]);
+
   const addToCart = (): void => {
-    const quantity = quantityInput.valueAsNumber;
+    const value = quantityInput.valueAsNumber;
 
     if (
-      !Number.isInteger(quantity) ||
-      quantity < product.minimumOrderQuantity ||
-      quantity > product.stock
+      !Number.isInteger(value) ||
+      value < product.minimumOrderQuantity ||
+      value > product.stock
     ) {
       quantityInput.setCustomValidity(
         `Quantity must be between ${product.minimumOrderQuantity} and ${product.stock}`,
@@ -38,7 +47,7 @@ export function renderPurchasePanel(product: Product): HTMLElement {
 
     document.dispatchEvent(
       new CustomEvent("cart:add", {
-        detail: { product, quantity },
+        detail: { product, quantity: value },
       }),
     );
   };
@@ -64,13 +73,13 @@ export function renderPurchasePanel(product: Product): HTMLElement {
     price,
     createParagraph(product.availabilityStatus, "purchase-panel__availability"),
     createContainer("purchase-panel__actions", [
-      quantityInput,
+      quantity,
       renderButton({
         text: "Add to cart",
         onClick: addToCart,
       }),
     ]),
     createParagraph(product.shippingInformation, "purchase-panel__shipping"),
-    createParagraph(product.returnPolicy, "purchase-panel__return"),
+    createParagraph(product.returnPolicy, "purchase-panel__returns"),
   ]);
 }
