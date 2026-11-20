@@ -1,0 +1,54 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: fit-content;
+  min-height: 24px;
+  padding: 4px 9px;
+
+  border: 1px solid transparent;
+  border-radius: 2px;
+
+  font-family: var(--font-body);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  line-height: 1;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* Product tags */
+
+.badge--tag {
+  background: var(--color-surface);
+  color: var(--color-muted);
+}
+
+/* Discount */
+
+.badge--discount {
+  background: #eee9df;
+  color: #8c6340;
+}
+
+/* Availability */
+
+.badge--success {
+  background: #edf0e8;
+  color: #66734d;
+}
+
+.badge--danger {
+  background: #f4eae7;
+  color: #a65d50;
+}
+
+/* Neutral */
+
+.badge--neutral {
+  background: transparent;
+  border-color: var(--color-border);
+  color: var(--color-muted);
+}
