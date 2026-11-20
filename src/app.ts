@@ -13,6 +13,10 @@ export async function start(path: string): Promise<void> {
           .then(renderProductDetails)
           .catch(renderErrorPage),
       );
+    } else {
+      document.body.replaceChildren(
+        renderErrorPage(new Error("Product not found")),
+      );
     }
   } else {
     document.body.textContent = "Project initialized";
