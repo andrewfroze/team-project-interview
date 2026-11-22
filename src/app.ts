@@ -1,6 +1,8 @@
 import { fetchProductDetails } from "./api/apiClient";
 import { renderErrorPage } from "./pages/error-page/error-page";
 import { renderProductDetails } from "./pages/product-details";
+import { renderCatalog } from "./pages/catalog/catalog";
+import { createElement } from "./utils/elementFactory";
 
 const BASE_PATH = import.meta.env.BASE_URL.replace(/\/$/, "");
 
@@ -12,7 +14,15 @@ export async function start(path: string): Promise<void> {
   const productMatch = normalizedPath.match(/^\/product\/(\d+)\/?$/);
 
   if (!productMatch) {
-    document.body.textContent = "Project initialized";
+    const loading = createElement("p", {
+      textContent: "Загрузка товаров...",
+    });
+
+    document.body.replaceChildren(loading);
+
+    const catalog = await renderCatalog().catch(renderErrorPage);
+
+    document.body.replaceChildren(catalog);
     return;
   }
 

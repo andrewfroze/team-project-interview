@@ -6,7 +6,10 @@ import {
 } from "../../../../utils/elementFactory";
 import { renderButton } from "../../../../components/button/button";
 import { renderBadge } from "../../../../components/badge/badge";
-import { calculateDiscountPrice, formatPrice } from "../../utils/formatPrice";
+import {
+  calculateDiscountPrice,
+  formatPrice,
+} from "../../../../utils/formatPrice";
 import "./purchasePanel.css";
 
 export function renderPurchasePanel(product: Product): HTMLElement {
