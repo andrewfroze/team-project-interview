@@ -1,5 +1,5 @@
 import { createElement } from "../utils/elementFactory";
-import { getCartItems } from "./cartStore";
+import { changeCartQuantity, getCartItems } from "./cartStore";
 
 function formatCartPrice(price: number): string {
   return new Intl.NumberFormat("en-US", {
@@ -12,6 +12,17 @@ export function renderCartPage(): HTMLElement {
   const page = createElement("main", {
     className: "cart-page",
   });
+
+  const handleQuantityChange = (productId: number, delta: 1 | -1): void => {
+    const changed = changeCartQuantity(productId, delta);
+
+    if (!changed) {
+      return;
+    }
+
+    page.replaceWith(renderCartPage());
+    document.dispatchEvent(new Event("cart:updated"));
+  };
 
   const title = createElement("h1", {
     className: "cart-page__title",
@@ -67,12 +78,38 @@ export function renderCartPage(): HTMLElement {
 
     const unitPrice = item.price * (1 - item.discountPercentage / 100);
 
+    const quantityControls = createElement(
+      "div",
+      { className: "cart-item__quantity-controls" },
+      [
+        createElement("span", {
+          textContent: "Количество:",
+        }),
+        createElement("button", {
+          type: "button",
+          className: "cart-item__quantity-button",
+          textContent: "−",
+          ariaLabel: `Уменьшить количество товара ${item.title}`,
+          disabled: item.quantity === 1,
+          onclick: () => handleQuantityChange(item.id, -1),
+        }),
+        createElement("span", {
+          className: "cart-item__quantity-value",
+          textContent: String(item.quantity),
+        }),
+        createElement("button", {
+          type: "button",
+          className: "cart-item__quantity-button",
+          textContent: "+",
+          ariaLabel: `Увеличить количество товара ${item.title}`,
+          onclick: () => handleQuantityChange(item.id, 1),
+        }),
+      ],
+    );
+
     const details = createElement("div", { className: "cart-item__details" }, [
       productLink,
-      createElement("p", {
-        className: "cart-item__quantity",
-        textContent: `Количество: ${item.quantity}`,
-      }),
+      quantityControls,
       createElement("p", {
         className: "cart-item__price",
         textContent: `Цена за штуку: ${formatCartPrice(unitPrice)}`,
