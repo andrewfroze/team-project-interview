@@ -4,23 +4,16 @@ import { renderProductDetails } from "./pages/product-details";
 import { renderCatalog } from "./pages/catalog/catalog";
 import { createElement } from "./utils/elementFactory";
 
-export async function start(path: string): Promise<void> {
-  if (path.includes("/product/")) {
-    const match = path.match(/\/product\/(\d+)/);
-    const productId = match ? Number(match[1]) : null;
+const BASE_PATH = import.meta.env.BASE_URL.replace(/\/$/, "");
 
-    if (productId) {
-      document.body.replaceChildren(
-        await fetchProductDetails(productId)
-          .then(renderProductDetails)
-          .catch(renderErrorPage),
-      );
-    } else {
-      document.body.replaceChildren(
-        renderErrorPage(new Error("Product not found")),
-      );
-    }
-  } else {
+export async function start(path: string): Promise<void> {
+  const normalizedPath = path.startsWith(BASE_PATH)
+    ? path.slice(BASE_PATH.length) || "/"
+    : path;
+
+  const productMatch = normalizedPath.match(/^\/product\/(\d+)\/?$/);
+
+  if (!productMatch) {
     const loading = createElement("p", {
       textContent: "Загрузка товаров...",
     });
@@ -30,5 +23,21 @@ export async function start(path: string): Promise<void> {
     const catalog = await renderCatalog().catch(renderErrorPage);
 
     document.body.replaceChildren(catalog);
+    return;
   }
+
+  const productId = Number(productMatch[1]);
+
+  if (!Number.isSafeInteger(productId) || productId <= 0) {
+    document.body.replaceChildren(
+      renderErrorPage(new Error("Product not found")),
+    );
+    return;
+  }
+
+  document.body.replaceChildren(
+    await fetchProductDetails(productId)
+      .then(renderProductDetails)
+      .catch(renderErrorPage),
+  );
 }
