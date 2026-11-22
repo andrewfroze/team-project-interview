@@ -17,7 +17,8 @@
     "format": "prettier . --write",
     "lint": "eslint .",
     "prepare": "husky",
-    "deploy": "npm run build && gh-pages -d dist",
+    "create:404": "node scripts/create-404.js",
+    "deploy": "npm run build && npm run create:404 && gh-pages -d dist",
     "test": "vitest run --passWithNoTests"
   },
   "devDependencies": {
