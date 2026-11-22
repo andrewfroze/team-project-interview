@@ -1,10 +1,7 @@
 import { createElement } from "../../utils/elementFactory";
 import { fetchProductCards } from "../../api/apiClient";
 import type { ProductCard } from "../../models/product";
-import {
-  calculateDiscountPrice,
-  formatPrice,
-} from "../product-details/utils/formatPrice";
+import { calculateDiscountPrice, formatPrice } from "../../utils/formatPrice";
 import "./catalog.css";
 
 function createProductCard(product: ProductCard): HTMLElement {
