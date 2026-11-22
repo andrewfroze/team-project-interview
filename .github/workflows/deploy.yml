@@ -39,6 +39,7 @@ jobs:
       - name: Build and Deploy
         run: |
           npm run build
+          npm run create:404
           npx gh-pages -d dist --repo https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
