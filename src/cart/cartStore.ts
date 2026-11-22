@@ -4,6 +4,15 @@ import { isCartItem } from "../validators/cartValidator";
 
 const STORAGE_KEY = "shop-cart";
 
+export interface CartItem {
+  id: number;
+  title: string;
+  image: string;
+  price: number;
+  discountPercentage: number;
+  quantity: number;
+}
+
 function loadCart(): CartItem[] {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
