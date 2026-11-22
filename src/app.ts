@@ -2,6 +2,7 @@ import { fetchProductDetails } from "./api/apiClient";
 import { renderMainLayout } from "./layouts/mainLayout";
 import { renderErrorPage } from "./pages/error-page/error-page";
 import { renderHomePage } from "./pages/home/homePage";
+import { renderCartPage } from "./cart/cartPage";
 import { renderProductDetails } from "./pages/product-details";
 import { renderCatalog } from "./pages/catalog/catalog";
 import { createElement } from "./utils/elementFactory";
@@ -30,6 +31,11 @@ async function resolvePage(): Promise<HTMLElement> {
 
   if (relativePath === "" || relativePath === "/") {
     return renderHomePage();
+  }
+
+  const cartMatch = relativePath.match(/^\/cart\/?$/);
+  if (cartMatch) {
+    return renderCartPage();
   }
 
   const productMatch = relativePath.match(/^\/product\/(\d+)\/?$/);

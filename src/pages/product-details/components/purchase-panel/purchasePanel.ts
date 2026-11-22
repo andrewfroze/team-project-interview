@@ -78,7 +78,7 @@ export function renderPurchasePanel(product: Product): HTMLElement {
     createContainer("purchase-panel__actions", [
       quantity,
       renderButton({
-        text: "Add to cart",
+        text: "Добавить в корзину",
         onClick: addToCart,
       }),
     ]),
