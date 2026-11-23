@@ -57,6 +57,25 @@ export function addToCart(product: Product, quantity: number): void {
   saveCart();
 }
 
+export function changeCartQuantity(productId: number, delta: 1 | -1): boolean {
+  const item = cartItems.find((item) => item.id === productId);
+
+  if (!item) {
+    return false;
+  }
+
+  const newQuantity = item.quantity + delta;
+
+  if (!Number.isSafeInteger(newQuantity) || newQuantity < 1) {
+    return false;
+  }
+
+  item.quantity = newQuantity;
+  saveCart();
+
+  return true;
+}
+
 export function getCartItems(): CartItem[] {
   return cartItems.map((item) => ({ ...item }));
 }

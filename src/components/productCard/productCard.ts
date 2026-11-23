@@ -5,6 +5,11 @@ import { calculateDiscountPrice, formatPrice } from "../../utils/formatPrice";
 import "./productCard.css";
 
 export function createProductCard(product: ProductCard): HTMLElement {
+  const card = createElement("a", {
+    className: "product-card",
+    href: `${import.meta.env.BASE_URL}product/${product.id}`,
+  });
+
   const fallbackImage = `${import.meta.env.BASE_URL}placeholder.svg`;
 
   const image = createElement("img", {
@@ -16,46 +21,52 @@ export function createProductCard(product: ProductCard): HTMLElement {
     image.onerror = null;
     image.src = fallbackImage;
   };
+  card.append(image);
 
-  const brand = createElement("p", {
-    className: "product-card__brand",
-    textContent: product.brand || "Без бренда",
-  });
+  card.append(
+    createElement("h2", {
+      textContent: product.title,
+    }),
+  );
 
-  const title = createElement("h2", {
-    textContent: product.title,
-  });
+  if (product.brand) {
+    card.append(
+      createElement("p", {
+        className: "product-card__brand",
+        textContent: product.brand,
+      }),
+    );
+  }
 
-  const rating = createElement("p", {
-    className: "product-card__rating",
-    textContent: `★ ${product.rating.toFixed(1)} / 5`,
-  });
+  card.append(
+    createElement("p", {
+      className: "product-card__rating",
+      textContent: `★ ${product.rating.toFixed(1)}`,
+    }),
+  );
 
   const discountedPrice = calculateDiscountPrice(
     product.price,
     product.discountPercentage,
   );
 
-  const price = createElement("p", { className: "product-card__price" }, [
-    createElement("strong", {
-      textContent: formatPrice(discountedPrice),
-    }),
-    createElement("s", {
-      textContent: formatPrice(product.price),
-    }),
-  ]);
-
-  const discount = createElement("span", {
-    className: "product-card__discount",
-    textContent: `−${Math.round(product.discountPercentage)}%`,
-  });
-
-  return createElement(
-    "a",
-    {
-      className: "product-card",
-      href: `${import.meta.env.BASE_URL}product/${product.id}`,
-    },
-    [image, discount, brand, title, rating, price],
+  card.append(
+    createElement("p", { className: "product-card__price" }, [
+      createElement("strong", {
+        textContent: formatPrice(discountedPrice),
+      }),
+      createElement("s", {
+        textContent: formatPrice(product.price),
+      }),
+    ]),
   );
+
+  card.append(
+    createElement("span", {
+      className: "product-card__discount",
+      textContent: `−${Math.round(product.discountPercentage)}%`,
+    }),
+  );
+
+  return card;
 }
