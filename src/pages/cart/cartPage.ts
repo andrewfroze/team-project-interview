@@ -7,6 +7,10 @@ import {
 import { changeCartQuantity, getCartItems } from "../../cart/cartStore.ts";
 
 import "./cart.css";
+import {
+  calculateUnitTotal,
+  calculateUnitTotalOriginal,
+} from "../../cart/calculatePrice.ts";
 
 function renderCartItem(
   item: CartItem,
@@ -82,13 +86,32 @@ function renderCartItem(
     }),
   ]);
 
+  const subtotal = createElement("div", { className: "cart-item__subtotal" }, [
+    createElement("strong", {
+      className: "cart-item__subtotal-current",
+      textContent: formatPrice(calculateUnitTotal(item)),
+    }),
+    ...(item.discountPercentage > 0
+      ? [
+          createElement("s", {
+            className: "cart-item__subtotal-original",
+            textContent: formatPrice(calculateUnitTotalOriginal(item)),
+          }),
+        ]
+      : []),
+  ]);
+
   const details = createElement("div", { className: "cart-item__details" }, [
     productLink,
     quantityControls,
     price,
   ]);
 
-  return createElement("article", { className: "cart-item" }, [image, details]);
+  return createElement("article", { className: "cart-item" }, [
+    image,
+    details,
+    subtotal,
+  ]);
 }
 
 export function renderCartPage(): HTMLElement {
@@ -135,18 +158,53 @@ export function renderCartPage(): HTMLElement {
     list.append(renderCartItem(item, handleQuantityChange));
   }
 
-  const total = items.reduce(
-    (sum: number, item: CartItem) =>
+  const totalOriginal = items.reduce(
+    (sum, item) => sum + item.price * item.quantity,
+    0,
+  );
+
+  const totalDiscounted = items.reduce(
+    (sum, item) =>
       sum +
       calculateDiscountPrice(item.price, item.discountPercentage) *
         item.quantity,
     0,
   );
 
-  const totalElement = createElement("p", {
-    className: "cart-page__total",
-    textContent: `Итого: ${formatPrice(total)}`,
-  });
+  const totalElement = createElement("div", { className: "cart-page__total" }, [
+    createElement(
+      "div",
+      {
+        className: "cart-page__total-original",
+      },
+      [
+        createElement("span", {
+          textContent: "Полная стоимость:",
+        }),
+        createElement("s", {
+          textContent: formatPrice(totalOriginal),
+        }),
+      ],
+    ),
+    createElement(
+      "div",
+      {
+        className: "cart-page__total-discounted",
+      },
+      [
+        createElement("span", {
+          textContent: "Итого со скидкой:",
+        }),
+        createElement("strong", {
+          textContent: formatPrice(totalDiscounted),
+        }),
+      ],
+    ),
+    createElement("p", {
+      className: "cart-page__savings",
+      textContent: `Ваша экономия: ${formatPrice(totalOriginal - totalDiscounted)}`,
+    }),
+  ]);
 
   page.append(list, totalElement);
 
