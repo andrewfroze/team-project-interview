@@ -48,7 +48,9 @@ async function resolvePage(): Promise<HTMLElement> {
 
   const catalogMatch = relativePath.match(/^\/catalog\/?$/);
   if (catalogMatch) {
-    return renderCatalog();
+    const searchParams = new URLSearchParams(window.location.search);
+    const category = searchParams.get("category") ?? undefined;
+    return renderCatalog(category);
   }
 
   const aboutUsMatch = relativePath.match(/^\/about-us\/?$/);

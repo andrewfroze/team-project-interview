@@ -31,7 +31,7 @@ export async function renderHomePage(): Promise<HTMLElement> {
     className: "home-page",
   });
 
-  const products = await fetchProductCards(Math.random() * 150, 10)
+  const products = await fetchProductCards(undefined, Math.random() * 150, 10)
     .then((result) => result.products)
     .catch(() => []);
 

@@ -3,7 +3,7 @@ import { fetchProductCards } from "../../api/apiClient";
 import "./catalog.css";
 import { createProductCard } from "../../components/productCard/productCard";
 
-export function renderCatalog(): HTMLElement {
+export function renderCatalog(category?: string): HTMLElement {
   const catalog = createElement("section", {
     className: "catalog",
   });
@@ -25,7 +25,7 @@ export function renderCatalog(): HTMLElement {
   content.append(loading);
   catalog.append(title, content);
 
-  fetchProductCards()
+  fetchProductCards(category)
     .then((data) => {
       const cards = data.products.map(createProductCard);
 

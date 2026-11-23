@@ -8,6 +8,7 @@ const API_URL = "https://dummyjson.com/";
 const DEFAULT_TIMEOUT = 10_000;
 
 export async function fetchProductCards(
+  category?: string,
   skip: number = 0,
   limit: number = 20,
   select: string[] = [
@@ -30,8 +31,10 @@ export async function fetchProductCards(
     select: select.join(","),
   });
 
+  const path = "products" + (category ? `/category/${category}` : "");
+
   return request<ProductCards>(
-    `${API_URL}products?${params}`,
+    `${API_URL}${path}?${params}`,
     timeout,
     isProductCards,
   );
