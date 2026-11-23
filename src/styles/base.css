@@ -38,6 +38,7 @@ main {
 #app {
   padding-inline: 10px;
   width: 100%;
+  max-width: var(--container-width);
 }
 
 .app__loading {
