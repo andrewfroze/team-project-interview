@@ -65,21 +65,21 @@ async function renderApp(): Promise<void> {
   const root = createElement("div", { id: "app" });
   document.body.replaceChildren(root);
 
-  const loading = createElement("p", {
-    className: "app__loading",
-    textContent: "Загрузка...",
-  });
-
-  const layout = await renderMainLayout(loading);
-  root.replaceChildren(layout);
-
-  const main = layout.querySelector<HTMLElement>(".app-layout__content");
-
-  if (!main) {
-    throw new Error("Main content container not found");
-  }
-
   try {
+    const loading = createElement("p", {
+      className: "app__loading",
+      textContent: "Загрузка...",
+    });
+
+    const layout = await renderMainLayout(loading);
+    root.replaceChildren(layout);
+
+    const main = layout.querySelector<HTMLElement>(".app-layout__content");
+
+    if (!main) {
+      throw new Error("Main content container not found");
+    }
+
     const page = await resolvePage();
 
     main.replaceChildren(page);
@@ -87,11 +87,12 @@ async function renderApp(): Promise<void> {
     requestAnimationFrame(scrollToHash);
   } catch (error) {
     console.error("Failed to render application:", error);
-    main.replaceChildren(
-      renderErrorPage(
-        error instanceof Error ? error : new Error("Unknown error"),
-      ),
+
+    const errorPage = renderErrorPage(
+      error instanceof Error ? error : new Error("Unknown error"),
     );
+
+    root.replaceChildren(errorPage);
   }
 }
 
