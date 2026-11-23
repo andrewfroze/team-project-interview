@@ -1,5 +1,8 @@
-import { createElement, createImage } from "../../../utils/elementFactory.ts";
-import { getCartCount } from "../../../cart/cartStore.ts";
+import {
+  createElement,
+  createImage,
+} from "../../../../utils/elementFactory.ts";
+import { getCartCount } from "../../../../cart/cartStore.ts";
 import "./cartHeader.css";
 
 export function renderCartHeaderIcon(): HTMLElement {

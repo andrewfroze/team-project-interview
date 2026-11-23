@@ -7,7 +7,7 @@ import {
 import { renderCategoriesMenu } from "../categoriesDropdown/categoriesDropdown";
 
 import "./header.css";
-import { renderCartHeaderIcon } from "../../pages/cart/components/cartHeader.ts";
+import { renderCartHeaderIcon } from "../../pages/cart/components/headerIcon/cartHeader.ts";
 
 export async function renderHeader(): Promise<HTMLElement> {
   const header = createElement("header", {
