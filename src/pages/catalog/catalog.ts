@@ -3,13 +3,9 @@ import { fetchProductCards } from "../../api/apiClient";
 import "./catalog.css";
 import { createProductCard } from "../../components/productCard/productCard";
 
-export async function renderCatalog(): Promise<HTMLElement> {
+export function renderCatalog(): HTMLElement {
   const catalog = createElement("section", {
     className: "catalog",
-  });
-
-  const loading = createElement("p", {
-    textContent: "Загрузка товаров...",
   });
 
   const title = createElement("h1", {
@@ -17,15 +13,34 @@ export async function renderCatalog(): Promise<HTMLElement> {
     textContent: "Каталог товаров",
   });
 
-  catalog.append(loading);
+  const content = createElement("div", {
+    className: "catalog__content",
+  });
 
-  const data = await fetchProductCards();
+  const loading = createElement("p", {
+    className: "catalog__loading",
+    textContent: "Загрузка товаров...",
+  });
 
-  const cards = data.products.map(createProductCard);
+  content.append(loading);
+  catalog.append(title, content);
 
-  const grid = createElement("div", { className: "catalog__grid" }, cards);
+  fetchProductCards()
+    .then((data) => {
+      const cards = data.products.map(createProductCard);
 
-  catalog.replaceChildren(title, grid);
+      const grid = createElement("div", { className: "catalog__grid" }, cards);
+
+      content.replaceChildren(grid);
+    })
+    .catch(() => {
+      const error = createElement("p", {
+        className: "catalog__error",
+        textContent: "Не удалось загрузить товары. Попробуйте позже.",
+      });
+
+      content.replaceChildren(error);
+    });
 
   return catalog;
 }

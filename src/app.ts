@@ -48,7 +48,7 @@ async function resolvePage(): Promise<HTMLElement> {
 
   const catalogMatch = relativePath.match(/^\/catalog\/?$/);
   if (catalogMatch) {
-    return await renderCatalog().catch(renderErrorPage);
+    return renderCatalog();
   }
 
   const aboutUsMatch = relativePath.match(/^\/about-us\/?$/);
@@ -61,17 +61,36 @@ async function resolvePage(): Promise<HTMLElement> {
 
 async function renderApp(): Promise<void> {
   const root = createElement("div", { id: "app" });
-
   document.body.replaceChildren(root);
 
-  const page = await resolvePage();
-  const layout = await renderMainLayout(page);
+  const loading = createElement("p", {
+    className: "app__loading",
+    textContent: "Загрузка...",
+  });
 
+  const layout = await renderMainLayout(loading);
   root.replaceChildren(layout);
 
-  requestAnimationFrame(() => {
-    scrollToHash();
-  });
+  const main = layout.querySelector<HTMLElement>(".app-layout__content");
+
+  if (!main) {
+    throw new Error("Main content container not found");
+  }
+
+  try {
+    const page = await resolvePage();
+
+    main.replaceChildren(page);
+
+    requestAnimationFrame(scrollToHash);
+  } catch (error) {
+    console.error("Failed to render application:", error);
+    main.replaceChildren(
+      renderErrorPage(
+        error instanceof Error ? error : new Error("Unknown error"),
+      ),
+    );
+  }
 }
 
 function scrollToHash(): void {

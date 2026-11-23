@@ -37,4 +37,11 @@ main {
 
 #app {
   padding-inline: 10px;
+  width: 100%;
+}
+
+.app__loading {
+  padding: 48px 24px;
+  text-align: center;
+  color: var(--color-text-secondary);
 }
