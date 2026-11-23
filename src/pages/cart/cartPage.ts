@@ -159,15 +159,12 @@ export function renderCartPage(): HTMLElement {
   }
 
   const totalOriginal = items.reduce(
-    (sum, item) => sum + item.price * item.quantity,
+    (sum, item) => sum + calculateUnitTotalOriginal(item),
     0,
   );
 
   const totalDiscounted = items.reduce(
-    (sum, item) =>
-      sum +
-      calculateDiscountPrice(item.price, item.discountPercentage) *
-        item.quantity,
+    (sum, item) => sum + calculateUnitTotal(item),
     0,
   );
 
