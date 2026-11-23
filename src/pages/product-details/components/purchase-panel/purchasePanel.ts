@@ -15,9 +15,9 @@ import "./purchasePanel.css";
 export function renderPurchasePanel(product: Product): HTMLElement {
   const quantityInput = createElement("input", {
     type: "number",
-    min: String(product.minimumOrderQuantity),
+    min: "1",
     max: String(product.stock),
-    value: String(product.minimumOrderQuantity),
+    value: "1",
     className: "purchase-panel__quantity-input",
     ariaLabel: "Quantity",
   });
@@ -34,13 +34,9 @@ export function renderPurchasePanel(product: Product): HTMLElement {
   const addToCart = (): void => {
     const value = quantityInput.valueAsNumber;
 
-    if (
-      !Number.isInteger(value) ||
-      value < product.minimumOrderQuantity ||
-      value > product.stock
-    ) {
+    if (!Number.isInteger(value) || value < 1 || value > product.stock) {
       quantityInput.setCustomValidity(
-        `Quantity must be between ${product.minimumOrderQuantity} and ${product.stock}`,
+        `Quantity must be between 1 and ${product.stock}`,
       );
       quantityInput.reportValidity();
       return;
@@ -78,7 +74,7 @@ export function renderPurchasePanel(product: Product): HTMLElement {
     createContainer("purchase-panel__actions", [
       quantity,
       renderButton({
-        text: "Add to cart",
+        text: "Добавить в корзину",
         onClick: addToCart,
       }),
     ]),

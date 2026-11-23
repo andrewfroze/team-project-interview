@@ -1,7 +1,6 @@
 .product-details {
   display: flex;
   flex-direction: column;
-  width: min(var(--content-width), calc(100% - 64px));
   margin-inline: auto;
   padding: 36px 0 100px;
   color: var(--color-text);

@@ -1,8 +1,13 @@
 import { getCatalogUrl } from "../../router/router";
-import { createElement, createLink } from "../../utils/elementFactory";
+import {
+  createContainer,
+  createElement,
+  createLink,
+} from "../../utils/elementFactory";
 import { renderCategoriesMenu } from "../categoriesDropdown/categoriesDropdown";
 
 import "./header.css";
+import { renderCartHeaderIcon } from "../../pages/cart/components/cartHeader.ts";
 
 export async function renderHeader(): Promise<HTMLElement> {
   const header = createElement("header", {
@@ -19,15 +24,9 @@ export async function renderHeader(): Promise<HTMLElement> {
     textContent: "О нас",
   });
 
-  const topBar = createElement("div", { className: "header__top" }, [
-    createElement(
-      "div",
-      {
-        className: "header__left",
-      },
-      [brand, aboutLink],
-    ),
-    catalogLink,
+  const topBar = createContainer("header__top", [
+    createContainer("header__left", [brand, aboutLink]),
+    createContainer("header__right", [catalogLink, renderCartHeaderIcon()]),
   ]);
 
   header.append(topBar);

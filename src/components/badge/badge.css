@@ -10,7 +10,6 @@
   border: 1px solid transparent;
   border-radius: 2px;
 
-  font-family: var(--font-body);
   font-size: 10px;
   font-weight: 600;
   letter-spacing: 0.08em;
@@ -23,7 +22,6 @@
 
 .badge--tag {
   background: var(--color-surface);
-  color: var(--color-muted);
 }
 
 /* Discount */
@@ -50,5 +48,4 @@
 .badge--neutral {
   background: transparent;
   border-color: var(--color-border);
-  color: var(--color-muted);
 }

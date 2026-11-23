@@ -14,9 +14,14 @@
   border-bottom: 1px solid var(--color-border);
 }
 
+.header__right,
 .header__left {
   display: flex;
   align-items: center;
+}
+
+.header__right {
+  gap: 10px;
 }
 
 .header__brand {
@@ -31,9 +36,9 @@
   display: inline-flex;
   justify-content: center;
   align-items: center;
-  min-width: 120px;
+  min-width: 60px;
   min-height: 42px;
-  padding: 0 22px;
+  padding: 0 clamp(8px, 3vw, 22px);
   background: var(--color-text);
   color: white;
   font-size: 12px;
@@ -61,6 +66,11 @@
   border-left: 1px solid var(--color-border);
   margin-left: 10px;
   padding-inline: 10px;
+  transition: background-color 500ms ease;
+}
+
+.header__nav-link:hover {
+  background-color: #eee9df;
 }
 
 @media (max-width: 600px) {
