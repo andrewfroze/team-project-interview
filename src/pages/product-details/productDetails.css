@@ -1,17 +1,3 @@
-:root {
-  --color-page: #faf9f6;
-  --color-surface: #f1f0eb;
-  --color-text: #20201e;
-  --color-muted: #85837e;
-  --color-border: #e8e6df;
-  --color-accent: #737b55;
-  --color-accent-hover: #5e6643;
-
-  --font-body: "Inter", sans-serif;
-
-  --content-width: 1240px;
-}
-
 .product-details {
   display: flex;
   flex-direction: column;
