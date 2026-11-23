@@ -68,7 +68,7 @@ describe("fetchProductCards", () => {
       json: vi.fn().mockResolvedValue(mockProducts),
     });
 
-    await fetchProductCards(10, 5, ["id", "title", "price"]);
+    await fetchProductCards(undefined, 10, 5, ["id", "title", "price"]);
 
     const [url] = mockFetch.mock.calls[0];
     const params = new URL(url).searchParams;
@@ -109,7 +109,7 @@ describe("fetchProductCards", () => {
       json: vi.fn().mockResolvedValue(mockProducts),
     });
 
-    await fetchProductCards(0, 20, ["id"], 5000);
+    await fetchProductCards(undefined, 0, 20, ["id"], 5000);
 
     const [, options] = mockFetch.mock.calls[0];
 

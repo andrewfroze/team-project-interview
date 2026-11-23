@@ -42,8 +42,7 @@
 }
 
 .button--primary:hover:not(:disabled) {
-  background: var(--color-accent-hover);
-  border-color: var(--color-accent-hover);
+  opacity: 0.75;
 }
 
 /* Secondary */

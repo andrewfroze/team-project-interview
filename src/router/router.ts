@@ -7,3 +7,11 @@ export function getRoute(): string {
     ? pathname.slice(BASE_PATH.length) || "/"
     : pathname;
 }
+
+export function getCatalogUrl(category?: string): string {
+  const catalogUrl = `${import.meta.env.BASE_URL}catalog`;
+
+  return category
+    ? `${catalogUrl}?category=${encodeURIComponent(category)}`
+    : catalogUrl;
+}

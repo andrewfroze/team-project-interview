@@ -9,6 +9,7 @@
   --color-accent: #202020;
   --color-success: #27834c;
   --color-warning: #e6a23c;
+  --color-accent-hover: #5e6643;
 
   --font-body: "Inter", sans-serif;
 
@@ -17,4 +18,31 @@
 
 * {
   box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0;
+}
+
+main {
+  max-width: var(--container-width);
+}
+
+#app {
+  padding-inline: 10px;
+  width: 100%;
+  max-width: var(--container-width);
+}
+
+.app__loading {
+  padding: 48px 24px;
+  text-align: center;
+  color: var(--color-text-secondary);
 }

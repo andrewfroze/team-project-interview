@@ -1,11 +1,14 @@
+import type { ProductCategory } from "../models/category";
 import type { Product, ProductCards } from "../models/product";
 import { request } from "./request";
+import { isProductCategory } from "./validators/categoryValidator";
 import { isProduct, isProductCards } from "./validators/productValidator";
 
 const API_URL = "https://dummyjson.com/";
 const DEFAULT_TIMEOUT = 10_000;
 
 export async function fetchProductCards(
+  category?: string,
   skip: number = 0,
   limit: number = 20,
   select: string[] = [
@@ -28,8 +31,10 @@ export async function fetchProductCards(
     select: select.join(","),
   });
 
+  const path = "products" + (category ? `/category/${category}` : "");
+
   return request<ProductCards>(
-    `${API_URL}products?${params}`,
+    `${API_URL}${path}?${params}`,
     timeout,
     isProductCards,
   );
@@ -40,4 +45,20 @@ export async function fetchProductDetails(
   timeout: number = DEFAULT_TIMEOUT,
 ): Promise<Product> {
   return request<Product>(`${API_URL}products/${id}`, timeout, isProduct);
+}
+
+export async function fetchCategories(): Promise<ProductCategory[]> {
+  const response = await fetch(`${API_URL}/products/categories`);
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch product categories");
+  }
+
+  const data: unknown = await response.json();
+
+  if (!Array.isArray(data) || !data.every(isProductCategory)) {
+    throw new Error("Invalid categories response");
+  }
+
+  return data;
 }

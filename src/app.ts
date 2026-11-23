@@ -1,43 +1,117 @@
 import { fetchProductDetails } from "./api/apiClient";
+import { renderMainLayout } from "./layouts/mainLayout";
 import { renderErrorPage } from "./pages/error-page/error-page";
+import { renderHomePage } from "./pages/home/homePage";
 import { renderProductDetails } from "./pages/product-details";
 import { renderCatalog } from "./pages/catalog/catalog";
 import { createElement } from "./utils/elementFactory";
+import { renderAboutUs } from "./pages/about-us/aboutUs";
 
-const BASE_PATH = import.meta.env.BASE_URL.replace(/\/$/, "");
+function getAppBasePath(): string {
+  const basePath = import.meta.env.BASE_URL;
 
-export async function start(path: string): Promise<void> {
-  const normalizedPath = path.startsWith(BASE_PATH)
-    ? path.slice(BASE_PATH.length) || "/"
-    : path;
+  return basePath.endsWith("/") ? basePath.slice(0, -1) : basePath;
+}
 
-  const productMatch = normalizedPath.match(/^\/product\/(\d+)\/?$/);
+function createNotFoundPage(): HTMLElement {
+  return createElement("section", { className: "not-found-page" }, [
+    createElement("h1", {}, ["Page not found"]),
+    createElement("p", {}, ["The requested page does not exist."]),
+  ]);
+}
 
-  if (!productMatch) {
+async function resolvePage(): Promise<HTMLElement> {
+  const basePath = getAppBasePath();
+  const pathname = window.location.pathname;
+
+  const relativePath = pathname.startsWith(basePath)
+    ? pathname.slice(basePath.length)
+    : pathname;
+
+  if (relativePath === "" || relativePath === "/") {
+    return renderHomePage();
+  }
+
+  const productMatch = relativePath.match(/^\/product\/(\d+)\/?$/);
+
+  if (productMatch) {
+    const productId = Number(productMatch[1]);
+
+    if (!Number.isSafeInteger(productId) || productId <= 0) {
+      return renderErrorPage(new Error("Product not found"));
+    }
+
+    return await fetchProductDetails(productId)
+      .then(renderProductDetails)
+      .catch(renderErrorPage);
+  }
+
+  const catalogMatch = relativePath.match(/^\/catalog\/?$/);
+  if (catalogMatch) {
+    const searchParams = new URLSearchParams(window.location.search);
+    const category = searchParams.get("category") ?? undefined;
+    return renderCatalog(category);
+  }
+
+  const aboutUsMatch = relativePath.match(/^\/about-us\/?$/);
+  if (aboutUsMatch) {
+    return renderAboutUs();
+  }
+
+  return createNotFoundPage();
+}
+
+async function renderApp(): Promise<void> {
+  const root = createElement("div", { id: "app" });
+  document.body.replaceChildren(root);
+
+  try {
     const loading = createElement("p", {
-      textContent: "Загрузка товаров...",
+      className: "app__loading",
+      textContent: "Загрузка...",
     });
 
-    document.body.replaceChildren(loading);
+    const layout = await renderMainLayout(loading);
+    root.replaceChildren(layout);
 
-    const catalog = await renderCatalog().catch(renderErrorPage);
+    const main = layout.querySelector<HTMLElement>(".app-layout__content");
 
-    document.body.replaceChildren(catalog);
-    return;
-  }
+    if (!main) {
+      throw new Error("Main content container not found");
+    }
 
-  const productId = Number(productMatch[1]);
+    const page = await resolvePage();
 
-  if (!Number.isSafeInteger(productId) || productId <= 0) {
-    document.body.replaceChildren(
-      renderErrorPage(new Error("Product not found")),
+    main.replaceChildren(page);
+
+    requestAnimationFrame(scrollToHash);
+  } catch (error) {
+    console.error("Failed to render application:", error);
+
+    const errorPage = renderErrorPage(
+      error instanceof Error ? error : new Error("Unknown error"),
     );
+
+    root.replaceChildren(errorPage);
+  }
+}
+
+function scrollToHash(): void {
+  const hash = window.location.hash;
+
+  if (!hash) {
+    window.scrollTo(0, 0);
     return;
   }
 
-  document.body.replaceChildren(
-    await fetchProductDetails(productId)
-      .then(renderProductDetails)
-      .catch(renderErrorPage),
-  );
+  const target = document.querySelector<HTMLElement>(hash);
+
+  target?.scrollIntoView({
+    behavior: "smooth",
+    block: "start",
+  });
 }
+
+renderApp().catch((error: unknown) => {
+  console.error("Failed to render application:", error);
+});
