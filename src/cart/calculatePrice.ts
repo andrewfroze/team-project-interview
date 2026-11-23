@@ -8,6 +8,6 @@ export function calculateUnitTotalOriginal(cartItem: CartItem): number {
 export function calculateUnitTotal(cartItem: CartItem): number {
   return calculateDiscountPrice(
     calculateUnitTotalOriginal(cartItem),
-    cartItem.price,
+    cartItem.discountPercentage,
   );
 }
