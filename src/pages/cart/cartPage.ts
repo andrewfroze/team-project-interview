@@ -1,7 +1,12 @@
-import { createElement } from "../utils/elementFactory";
-import { getCartItems } from "./cartStore";
-import type { CartItem } from "../models/cart";
-import { calculateDiscountPrice, formatPrice } from "../utils/formatPrice";
+import { createElement } from "../../utils/elementFactory.ts";
+import { getCartItems } from "../../cart/cartStore.ts";
+import type { CartItem } from "../../models/cart.ts";
+import {
+  calculateDiscountPrice,
+  formatPrice,
+} from "../../utils/formatPrice.ts";
+
+import "./cart.css";
 
 function renderCartItem(item: CartItem): HTMLElement {
   const image = item.image

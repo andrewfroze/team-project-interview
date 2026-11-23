@@ -2,11 +2,13 @@ import { fetchProductDetails } from "./api/apiClient";
 import { renderMainLayout } from "./layouts/mainLayout";
 import { renderErrorPage } from "./pages/error-page/error-page";
 import { renderHomePage } from "./pages/home/homePage";
-import { renderCartPage } from "./cart/cartPage";
+import { renderCartPage } from "./pages/cart/cartPage.ts";
 import { renderProductDetails } from "./pages/product-details";
 import { renderCatalog } from "./pages/catalog/catalog";
 import { createElement } from "./utils/elementFactory";
 import { renderAboutUs } from "./pages/about-us/aboutUs";
+import type { Product } from "./models/product.ts";
+import { addToCart } from "./cart/cartStore.ts";
 
 function getAppBasePath(): string {
   const basePath = import.meta.env.BASE_URL;
@@ -120,4 +122,17 @@ function scrollToHash(): void {
 
 renderApp().catch((error: unknown) => {
   console.error("Failed to render application:", error);
+});
+
+document.addEventListener("cart:add", (event) => {
+  const { product, quantity } = (
+    event as CustomEvent<{
+      product: Product;
+      quantity: number;
+    }>
+  ).detail;
+
+  addToCart(product, quantity);
+
+  document.dispatchEvent(new Event("cart:updated"));
 });
