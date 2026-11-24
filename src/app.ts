@@ -102,6 +102,8 @@ async function renderApp(): Promise<void> {
     );
 
     root.replaceChildren(errorPage);
+  } finally {
+    renderNightMode();
   }
 }
 
@@ -137,5 +139,3 @@ document.addEventListener("cart:add", (event) => {
 
   document.dispatchEvent(new Event("cart:updated"));
 });
-
-renderNightMode();
