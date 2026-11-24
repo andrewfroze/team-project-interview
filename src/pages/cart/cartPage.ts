@@ -1,13 +1,17 @@
-import { createElement } from "../../utils/elementFactory.ts";
-import { formatPrice } from "../../utils/formatPrice.ts";
-import { changeCartQuantity, getCartItems } from "../../cart/cartStore.ts";
+import { createElement } from "../../utils/elementFactory";
+import { formatPrice } from "../../utils/formatPrice";
+import {
+  changeCartQuantity,
+  getCartItems,
+  removeCartItem,
+} from "../../cart/cartStore";
 
 import "./cart.css";
 import {
   calculateUnitTotal,
   calculateUnitTotalOriginal,
-} from "../../cart/calculatePrice.ts";
-import { renderCartItem } from "./components/cartItem/cartItem.ts";
+} from "../../cart/calculatePrice";
+import { renderCartItem } from "./components/cartItem/cartItem";
 
 export function renderCartPage(): HTMLElement {
   const page = createElement("main", {
@@ -18,6 +22,17 @@ export function renderCartPage(): HTMLElement {
     const changed = changeCartQuantity(productId, delta);
 
     if (!changed) {
+      return;
+    }
+
+    page.replaceWith(renderCartPage());
+    document.dispatchEvent(new Event("cart:updated"));
+  };
+
+  const handleRemove = (productId: number): void => {
+    const removed = removeCartItem(productId);
+
+    if (!removed) {
       return;
     }
 
@@ -50,7 +65,7 @@ export function renderCartPage(): HTMLElement {
   });
 
   for (const item of items) {
-    list.append(renderCartItem(item, handleQuantityChange));
+    list.append(renderCartItem(item, handleQuantityChange, handleRemove));
   }
 
   const totalOriginal = items.reduce(

@@ -83,3 +83,16 @@ export function getCartItems(): CartItem[] {
 export function getCartCount(): number {
   return cartItems.reduce((total, item) => total + item.quantity, 0);
 }
+
+export function removeCartItem(productId: number): boolean {
+  const itemIndex = cartItems.findIndex((item) => item.id === productId);
+
+  if (itemIndex === -1) {
+    return false;
+  }
+
+  cartItems.splice(itemIndex, 1);
+  saveCart();
+
+  return true;
+}
