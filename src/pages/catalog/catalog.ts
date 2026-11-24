@@ -7,6 +7,7 @@ import { createSearchController } from "../../utils/searchController";
 import type { ProductSortField, SortOrder } from "../../api/apiClient";
 
 import "./catalog.css";
+import { reportError } from "../../utils/errorHandler.ts";
 
 const PRODUCTS_PER_PAGE = 12;
 const DEBOUNCE_DELAY = 500;
@@ -326,12 +327,13 @@ export function renderCatalog(category?: string): HTMLElement {
       }
 
       renderProducts(data);
-    } catch {
+    } catch (error) {
       if (currentRequestId !== requestId) {
         return;
       }
 
       showError();
+      reportError(error);
     }
   }
 

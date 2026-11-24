@@ -2,7 +2,6 @@ import { ApiError } from "./errors/apiError";
 import { HttpError } from "./errors/httpError";
 import { NetworkError } from "./errors/networkError";
 import { TimeoutError } from "./errors/timeoutError";
-import { reportError } from "../utils/errorHandler";
 
 export async function request<T>(
   url: string,
@@ -68,9 +67,6 @@ export async function request<T>(
     }
 
     return data;
-  } catch (error) {
-    reportError(error);
-    throw error;
   } finally {
     clearTimeout(timeoutId);
   }

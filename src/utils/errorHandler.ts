@@ -17,7 +17,6 @@ function getUserMessage(error: unknown): string {
       return "Сервер долго не отвечает. Попробуйте ещё раз.";
 
     case "NetworkError":
-    case "TypeError":
       return "Не удалось подключиться к серверу. Проверьте интернет-соединение.";
 
     case "HttpError":

@@ -124,7 +124,7 @@ function scrollToHash(): void {
 }
 
 renderApp().catch((error: unknown) => {
-  console.error("Failed to render application:", error);
+  reportError(error);
 });
 
 document.addEventListener("cart:add", (event) => {
