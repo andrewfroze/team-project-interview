@@ -7,22 +7,24 @@ import { isProduct, isProductCards } from "./validators/productValidator";
 const API_URL = "https://dummyjson.com/";
 const DEFAULT_TIMEOUT = 10_000;
 
+const DEFAULT_SELECT_FIELDS: readonly string[] = Object.freeze([
+  "id",
+  "title",
+  "category",
+  "price",
+  "discountPercentage",
+  "rating",
+  "stock",
+  "tags",
+  "brand",
+  "images",
+]);
+
 export async function fetchProductCards(
   category?: string,
   skip: number = 0,
   limit: number = 20,
-  select: string[] = [
-    "id",
-    "title",
-    "category",
-    "price",
-    "discountPercentage",
-    "rating",
-    "stock",
-    "tags",
-    "brand",
-    "images",
-  ],
+  select: readonly string[] = DEFAULT_SELECT_FIELDS,
   timeout: number = DEFAULT_TIMEOUT,
 ): Promise<ProductCards> {
   const params = new URLSearchParams({
@@ -61,4 +63,32 @@ export async function fetchCategories(): Promise<ProductCategory[]> {
   }
 
   return data;
+}
+
+export async function searchProducts(
+  query: string,
+  skip: number = 0,
+  limit: number = 20,
+  signal?: AbortSignal,
+  select: readonly string[] = DEFAULT_SELECT_FIELDS,
+  timeout: number = DEFAULT_TIMEOUT,
+): Promise<ProductCards> {
+  const params = new URLSearchParams({
+    q: query,
+    skip: String(skip),
+    limit: String(limit),
+    select: select.join(","),
+  });
+
+  const timeoutSignal = AbortSignal.timeout(timeout);
+  const combinedSignal = signal
+    ? AbortSignal.any([signal, timeoutSignal])
+    : timeoutSignal;
+
+  return request<ProductCards>(
+    `${API_URL}products/search?${params}`,
+    timeout,
+    isProductCards,
+    combinedSignal,
+  );
 }
