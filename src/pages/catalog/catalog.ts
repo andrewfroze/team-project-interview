@@ -105,16 +105,26 @@ export function renderCatalog(category?: string): HTMLElement {
     page: number,
     className = "",
     disabled = false,
+    ariaLabel?: string,
+    isActive = false,
   ): HTMLButtonElement {
     const button = createElement("button", {
       type: "button",
       className: `catalog__page-button ${className}`.trim(),
       textContent: text,
-      disabled,
+      disabled: disabled || isActive,
     });
 
+    if (ariaLabel) {
+      button.setAttribute("aria-label", ariaLabel);
+    }
+
+    if (isActive) {
+      button.setAttribute("aria-current", "page");
+    }
+
     button.addEventListener("click", () => {
-      if (disabled || page === currentPage) {
+      if (button.disabled || page === currentPage) {
         return;
       }
 
@@ -136,6 +146,7 @@ export function renderCatalog(category?: string): HTMLElement {
       currentPage - 1,
       "catalog__page-button--arrow",
       currentPage === 1,
+      "Предыдущая страница",
     );
 
     pagination.append(previousButton);
@@ -154,10 +165,15 @@ export function renderCatalog(category?: string): HTMLElement {
         return;
       }
 
+      const isActive = page === currentPage;
+
       const button = createPageButton(
         String(page),
         page,
-        page === currentPage ? "catalog__page-button--active" : "",
+        isActive ? "catalog__page-button--active" : "",
+        false,
+        `Страница ${page}`,
+        isActive,
       );
 
       pagination.append(button);
@@ -168,6 +184,7 @@ export function renderCatalog(category?: string): HTMLElement {
       currentPage + 1,
       "catalog__page-button--arrow",
       currentPage === totalPages,
+      "Следующая страница",
     );
 
     pagination.append(nextButton);
@@ -235,19 +252,16 @@ export function renderCatalog(category?: string): HTMLElement {
     }
   }
 
-  const debouncedSearch = debounce((query: string) => {
-    activeQuery = query;
+  const debouncedSearch = debounce(() => {
     currentPage = 1;
 
     void loadPage(1);
   }, DEBOUNCE_DELAY);
 
   searchInput.addEventListener("input", () => {
-    // Отменяем текущий запрос и ожидающий debounce.
     searchController.cancel();
     debouncedSearch.cancel();
 
-    // Инвалидируем возможный запрос загрузки каталога.
     requestId += 1;
 
     activeQuery = searchInput.value.trim();
@@ -267,7 +281,7 @@ export function renderCatalog(category?: string): HTMLElement {
 
     pagination.replaceChildren();
 
-    debouncedSearch(activeQuery);
+    debouncedSearch();
   });
 
   void loadPage(1);

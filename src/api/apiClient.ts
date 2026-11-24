@@ -7,22 +7,24 @@ import { isProduct, isProductCards } from "./validators/productValidator";
 const API_URL = "https://dummyjson.com/";
 const DEFAULT_TIMEOUT = 10_000;
 
+const DEFAULT_SELECT_FIELDS: readonly string[] = Object.freeze([
+  "id",
+  "title",
+  "category",
+  "price",
+  "discountPercentage",
+  "rating",
+  "stock",
+  "tags",
+  "brand",
+  "images",
+]);
+
 export async function fetchProductCards(
   category?: string,
   skip: number = 0,
   limit: number = 20,
-  select: string[] = [
-    "id",
-    "title",
-    "category",
-    "price",
-    "discountPercentage",
-    "rating",
-    "stock",
-    "tags",
-    "brand",
-    "images",
-  ],
+  select: readonly string[] = DEFAULT_SELECT_FIELDS,
   timeout: number = DEFAULT_TIMEOUT,
 ): Promise<ProductCards> {
   const params = new URLSearchParams({
@@ -68,18 +70,7 @@ export async function searchProducts(
   skip: number = 0,
   limit: number = 20,
   signal?: AbortSignal,
-  select: string[] = [
-    "id",
-    "title",
-    "category",
-    "price",
-    "discountPercentage",
-    "rating",
-    "stock",
-    "tags",
-    "brand",
-    "images",
-  ],
+  select: readonly string[] = DEFAULT_SELECT_FIELDS,
   timeout: number = DEFAULT_TIMEOUT,
 ): Promise<ProductCards> {
   const params = new URLSearchParams({
