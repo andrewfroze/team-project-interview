@@ -12,6 +12,7 @@ import {
 import { renderCartItem } from "./components/cartItem/cartItem";
 
 import "./cart.css";
+import { showToast } from "../../components/toast/toast.ts";
 
 export function renderCartPage(): HTMLElement {
   const page = createElement("main", {
@@ -133,6 +134,7 @@ export function renderCartPage(): HTMLElement {
       }
     }
 
+    showToast("Товар удален!", "success");
     document.dispatchEvent(new Event("cart:updated"));
   };
 
