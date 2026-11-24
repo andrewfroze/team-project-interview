@@ -141,8 +141,6 @@ function enableNightMode(options: NightModeOptions = {}): void {
     animationFrame = requestAnimationFrame(animate);
   };
 
-  document.addEventListener("pointermove", updateTarget);
-
   animate();
 
   cleanup = () => {
