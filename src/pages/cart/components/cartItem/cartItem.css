@@ -1,4 +1,6 @@
 .cart-item-wrapper {
+  --cart-item-action-width: 100px;
+
   position: relative;
   overflow: hidden;
   border-bottom: 1px solid var(--color-border);
@@ -11,7 +13,7 @@
   display: flex;
   align-items: stretch;
   justify-content: flex-end;
-  width: var(--cart-item-action-width, 110px);
+  width: var(--cart-item-action-width);
   background: #dc2626;
 }
 
@@ -53,7 +55,7 @@
 }
 
 .cart-item--open {
-  transform: translateX(calc(-1 * var(--cart-item-action-width, 110px)));
+  transform: translateX(calc(-1 * var(--cart-item-action-width)));
 }
 
 .cart-item__image,
@@ -125,14 +127,22 @@
 .cart-item__quantity-controls {
   display: flex;
   align-items: center;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 10px;
   color: var(--color-text-secondary);
   font-size: 14px;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.cart-item__quantity-controls > span:first-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .cart-item__quantity-button {
   display: flex;
+  flex-shrink: 0;
   align-items: center;
   justify-content: center;
   width: 34px;
@@ -155,6 +165,7 @@
 }
 
 .cart-item__quantity-value {
+  flex-shrink: 0;
   min-width: 20px;
   color: var(--color-text);
   font-weight: 600;
@@ -207,11 +218,17 @@
   border-color: var(--color-accent);
 }
 
+.cart-item__toggle:focus-visible,
+.cart-item__remove:focus-visible,
+.cart-item__quantity-button:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+}
+
 .cart-item__toggle-icon {
   display: block;
   width: 20px;
   height: 20px;
-  object-fit: contain;
 }
 
 .cart-item__arrow-icon {
@@ -220,6 +237,10 @@
 }
 
 @media (max-width: 600px) {
+  .cart-item-wrapper {
+    --cart-item-action-width: 90px;
+  }
+
   .cart-item {
     grid-template-columns: 90px minmax(0, 1fr);
     gap: 14px;
@@ -258,8 +279,13 @@
   }
 
   .cart-item__quantity-controls {
-    gap: 7px;
+    gap: 5px;
     font-size: 12px;
+  }
+
+  .cart-item__quantity-button {
+    width: 28px;
+    height: 28px;
   }
 
   .cart-item__price {
@@ -276,9 +302,5 @@
     right: 5px;
     width: 34px;
     height: 34px;
-  }
-
-  .cart-item-wrapper {
-    --cart-item-action-width: 90px;
   }
 }

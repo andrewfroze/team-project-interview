@@ -5,18 +5,82 @@ import {
   getCartItems,
   removeCartItem,
 } from "../../cart/cartStore";
-
-import "./cart.css";
 import {
   calculateUnitTotal,
   calculateUnitTotalOriginal,
 } from "../../cart/calculatePrice";
 import { renderCartItem } from "./components/cartItem/cartItem";
 
+import "./cart.css";
+
 export function renderCartPage(): HTMLElement {
   const page = createElement("main", {
     className: "cart-page",
   });
+
+  const title = createElement("h1", {
+    className: "cart-page__title",
+    textContent: "Корзина",
+    tabIndex: -1,
+  });
+
+  const list = createElement("div", {
+    className: "cart-page__list",
+  });
+
+  const totalOriginalValue = createElement("s");
+  const totalDiscountedValue = createElement("strong");
+  const savingsValue = createElement("span");
+
+  const totalElement = createElement("div", { className: "cart-page__total" }, [
+    createElement("div", { className: "cart-page__total-original" }, [
+      createElement("span", {
+        textContent: "Полная стоимость:",
+      }),
+      totalOriginalValue,
+    ]),
+    createElement("div", { className: "cart-page__total-discounted" }, [
+      createElement("span", {
+        textContent: "Итого со скидкой:",
+      }),
+      totalDiscountedValue,
+    ]),
+    createElement("p", { className: "cart-page__savings" }, [
+      "Ваша экономия: ",
+      savingsValue,
+    ]),
+  ]);
+
+  page.append(title, list, totalElement);
+
+  const updateCartSummary = (): void => {
+    const items = getCartItems();
+
+    const totalOriginal = items.reduce(
+      (sum, item) => sum + calculateUnitTotalOriginal(item),
+      0,
+    );
+
+    const totalDiscounted = items.reduce(
+      (sum, item) => sum + calculateUnitTotal(item),
+      0,
+    );
+
+    totalOriginalValue.textContent = formatPrice(totalOriginal);
+    totalDiscountedValue.textContent = formatPrice(totalDiscounted);
+    savingsValue.textContent = formatPrice(totalOriginal - totalDiscounted);
+  };
+
+  const updateEmptyState = (): void => {
+    if (getCartItems().length === 0) {
+      list.replaceChildren(
+        createElement("p", {
+          className: "cart-page__empty",
+          textContent: "Корзина пуста. Добавьте товары.",
+        }),
+      );
+    }
+  };
 
   const handleQuantityChange = (productId: number, delta: 1 | -1): void => {
     const changed = changeCartQuantity(productId, delta);
@@ -26,99 +90,61 @@ export function renderCartPage(): HTMLElement {
     }
 
     page.replaceWith(renderCartPage());
+
     document.dispatchEvent(new Event("cart:updated"));
   };
 
   const handleRemove = (productId: number): void => {
-    const removed = removeCartItem(productId);
-
-    if (!removed) {
-      return;
-    }
-
     const itemElement = list.querySelector<HTMLElement>(
       `[data-product-id="${productId}"]`,
     );
 
+    if (!removeCartItem(productId)) {
+      return;
+    }
+
+    const shouldRestoreFocus =
+      itemElement?.contains(document.activeElement) ?? false;
+
+    const itemElements = Array.from(
+      list.querySelectorAll<HTMLElement>(".cart-item-wrapper"),
+    );
+
+    const removedIndex = itemElements.indexOf(itemElement!);
+
+    const nextItem =
+      itemElements[removedIndex + 1] ?? itemElements[removedIndex - 1];
+
     itemElement?.remove();
+
+    updateEmptyState();
+    updateCartSummary();
+
+    if (shouldRestoreFocus) {
+      const nextToggle =
+        nextItem?.querySelector<HTMLButtonElement>(".cart-item__toggle");
+
+      if (nextToggle) {
+        nextToggle.focus();
+      } else {
+        title.focus();
+      }
+    }
 
     document.dispatchEvent(new Event("cart:updated"));
   };
 
-  const title = createElement("h1", {
-    className: "cart-page__title",
-    textContent: "Корзина",
-  });
-
-  page.append(title);
-
   const items = getCartItems();
 
   if (items.length === 0) {
-    page.append(
-      createElement("p", {
-        className: "cart-page__empty",
-        textContent: "Корзина пуста. Добавьте товары.",
-      }),
-    );
-
-    return page;
+    updateEmptyState();
+  } else {
+    for (const item of items) {
+      list.append(renderCartItem(item, handleQuantityChange, handleRemove));
+    }
   }
 
-  const list = createElement("div", {
-    className: "cart-page__list",
-  });
-
-  for (const item of items) {
-    list.append(renderCartItem(item, handleQuantityChange, handleRemove));
-  }
-
-  const totalOriginal = items.reduce(
-    (sum, item) => sum + calculateUnitTotalOriginal(item),
-    0,
-  );
-
-  const totalDiscounted = items.reduce(
-    (sum, item) => sum + calculateUnitTotal(item),
-    0,
-  );
-
-  const totalElement = createElement("div", { className: "cart-page__total" }, [
-    createElement(
-      "div",
-      {
-        className: "cart-page__total-original",
-      },
-      [
-        createElement("span", {
-          textContent: "Полная стоимость:",
-        }),
-        createElement("s", {
-          textContent: formatPrice(totalOriginal),
-        }),
-      ],
-    ),
-    createElement(
-      "div",
-      {
-        className: "cart-page__total-discounted",
-      },
-      [
-        createElement("span", {
-          textContent: "Итого со скидкой:",
-        }),
-        createElement("strong", {
-          textContent: formatPrice(totalDiscounted),
-        }),
-      ],
-    ),
-    createElement("p", {
-      className: "cart-page__savings",
-      textContent: `Ваша экономия: ${formatPrice(totalOriginal - totalDiscounted)}`,
-    }),
-  ]);
-
-  page.append(list, totalElement);
+  updateCartSummary();
 
   return page;
 }

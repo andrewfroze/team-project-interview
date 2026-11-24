@@ -8,10 +8,36 @@ import {
   calculateUnitTotalOriginal,
 } from "../../../../cart/calculatePrice.ts";
 import type { CartItem } from "../../../../models/cart.ts";
+
 import "./cartItem.css";
 
-const REMOVE_ACTION_WIDTH = 100;
-const SWIPE_THRESHOLD = REMOVE_ACTION_WIDTH / 2;
+const SWIPE_START_THRESHOLD = 5;
+
+function createTrashIcon(): SVGSVGElement {
+  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+
+  svg.setAttribute("viewBox", "0 0 24 24");
+  svg.setAttribute("width", "20");
+  svg.setAttribute("height", "20");
+  svg.setAttribute("fill", "none");
+  svg.setAttribute("stroke", "currentColor");
+  svg.setAttribute("stroke-width", "1.8");
+  svg.setAttribute("stroke-linecap", "round");
+  svg.setAttribute("stroke-linejoin", "round");
+  svg.setAttribute("aria-hidden", "true");
+  svg.classList.add("cart-item__toggle-icon");
+
+  const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+
+  path.setAttribute(
+    "d",
+    "M3 6h18M8 6V4h8v2m-11 0 1 14h12l1-14M10 10v6M14 10v6",
+  );
+
+  svg.append(path);
+
+  return svg;
+}
 
 export function renderCartItem(
   item: CartItem,
@@ -70,6 +96,8 @@ export function renderCartItem(
     ],
   );
 
+  removeButton.tabIndex = -1;
+
   const action = createElement("div", { className: "cart-item__action" }, [
     removeButton,
   ]);
@@ -80,11 +108,7 @@ export function renderCartItem(
     ariaLabel: `Открыть удаление товара ${item.title}`,
   });
 
-  const trashIcon = createElement("img", {
-    className: "cart-item__toggle-icon",
-    src: "https://cdn-icons-png.flaticon.com/512/4387/4387398.png",
-    alt: "",
-  });
+  const trashIcon = createTrashIcon();
 
   const arrowIcon = createElement("span", {
     className: "cart-item__arrow-icon",
@@ -164,9 +188,19 @@ export function renderCartItem(
     toggleButton,
   ]);
 
+  const wrapper = createElement("div", { className: "cart-item-wrapper" }, [
+    action,
+    card,
+  ]);
+
+  wrapper.setAttribute("data-product-id", String(item.id));
+
+  const getActionWidth = (): number => action.getBoundingClientRect().width;
+
   const updateOpenState = (open: boolean): void => {
     isOpen = open;
-    currentOffset = open ? -REMOVE_ACTION_WIDTH : 0;
+
+    currentOffset = open ? -getActionWidth() : 0;
 
     card.classList.toggle("cart-item--open", open);
     card.style.transform = "";
@@ -179,6 +213,10 @@ export function renderCartItem(
         ? `Закрыть удаление товара ${item.title}`
         : `Открыть удаление товара ${item.title}`,
     );
+
+    toggleButton.setAttribute("aria-expanded", String(open));
+
+    removeButton.tabIndex = open ? 0 : -1;
   };
 
   toggleButton.addEventListener("click", () => {
@@ -188,7 +226,8 @@ export function renderCartItem(
   card.addEventListener("pointerdown", (event: PointerEvent) => {
     if (
       event.button !== 0 ||
-      (event.target as HTMLElement).closest("button, a")
+      !(event.target instanceof Element) ||
+      event.target.closest("button, a")
     ) {
       return;
     }
@@ -210,7 +249,10 @@ export function renderCartItem(
     const deltaY = event.clientY - pointerStartY;
 
     if (!isDragging) {
-      if (Math.abs(deltaX) < 5 || Math.abs(deltaX) < Math.abs(deltaY)) {
+      if (
+        Math.abs(deltaX) < SWIPE_START_THRESHOLD ||
+        Math.abs(deltaX) < Math.abs(deltaY)
+      ) {
         return;
       }
 
@@ -218,8 +260,10 @@ export function renderCartItem(
       card.style.transition = "none";
     }
 
+    const actionWidth = getActionWidth();
+
     const nextOffset = Math.max(
-      -REMOVE_ACTION_WIDTH,
+      -actionWidth,
       Math.min(0, dragStartOffset + deltaX),
     );
 
@@ -243,15 +287,35 @@ export function renderCartItem(
 
     card.style.transition = "";
 
-    updateOpenState(currentOffset <= -SWIPE_THRESHOLD);
+    const actionWidth = getActionWidth();
+    const swipeThreshold = actionWidth / 2;
 
-    requestAnimationFrame(() => {
+    updateOpenState(currentOffset <= -swipeThreshold);
+
+    window.setTimeout(() => {
       suppressClick = false;
-    });
+    }, 0);
+  };
+
+  const cancelSwipe = (event: PointerEvent): void => {
+    if (!card.hasPointerCapture(event.pointerId)) {
+      return;
+    }
+
+    card.releasePointerCapture(event.pointerId);
+
+    if (!isDragging) {
+      return;
+    }
+
+    isDragging = false;
+    card.style.transition = "";
+
+    updateOpenState(dragStartOffset < 0);
   };
 
   card.addEventListener("pointerup", finishSwipe);
-  card.addEventListener("pointercancel", finishSwipe);
+  card.addEventListener("pointercancel", cancelSwipe);
 
   card.addEventListener(
     "click",
@@ -263,18 +327,6 @@ export function renderCartItem(
       }
     },
     true,
-  );
-
-  const wrapper = createElement("div", { className: "cart-item-wrapper" }, [
-    action,
-    card,
-  ]);
-
-  wrapper.setAttribute("data-product-id", String(item.id));
-
-  wrapper.style.setProperty(
-    "--cart-item-action-width",
-    `${REMOVE_ACTION_WIDTH}px`,
   );
 
   return wrapper;
