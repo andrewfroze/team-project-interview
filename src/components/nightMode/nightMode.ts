@@ -80,6 +80,11 @@ function enableNightMode(options: NightModeOptions = {}): void {
     ...options,
   };
 
+  const existingOverlay = document.getElementById(OVERLAY_ID);
+  if (existingOverlay) {
+    existingOverlay.remove();
+  }
+
   const overlay = createElement("div", {
     id: OVERLAY_ID,
     className: "night-mode--active",
