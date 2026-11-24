@@ -1,10 +1,13 @@
 import type { ProductCards } from "../models/product";
+import type { ProductSortField, SortOrder } from "../api/apiClient";
 
 type SearchFunction = (
   query: string,
   skip: number,
   limit: number,
   signal: AbortSignal,
+  sortBy?: ProductSortField,
+  order?: SortOrder,
 ) => Promise<ProductCards>;
 
 interface SearchControllerOptions {
@@ -27,6 +30,8 @@ export function createSearchController({
     query: string,
     skip: number,
     limit: number,
+    sortBy?: ProductSortField,
+    order: SortOrder = "asc",
   ): Promise<void> {
     const currentRequestId = ++requestId;
 
@@ -38,13 +43,24 @@ export function createSearchController({
     onLoading();
 
     try {
-      const data = await search(query, skip, limit, controller.signal);
+      const data = await search(
+        query,
+        skip,
+        limit,
+        controller.signal,
+        sortBy,
+        order,
+      );
 
-      if (currentRequestId !== requestId) return;
+      if (currentRequestId !== requestId) {
+        return;
+      }
 
       onSuccess(data);
     } catch (error) {
-      if (currentRequestId !== requestId) return;
+      if (currentRequestId !== requestId) {
+        return;
+      }
 
       if (error instanceof Error && error.name === "AbortError") {
         return;

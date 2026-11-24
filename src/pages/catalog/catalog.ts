@@ -4,6 +4,7 @@ import type { ProductCards } from "../../models/product";
 import { createProductCard } from "../../components/productCard/productCard";
 import { debounce } from "../../utils/debounce";
 import { createSearchController } from "../../utils/searchController";
+import type { ProductSortField, SortOrder } from "../../api/apiClient";
 
 import "./catalog.css";
 
@@ -15,10 +16,12 @@ export function renderCatalog(category?: string): HTMLElement {
   let totalPages = 1;
   let activeQuery = "";
   let requestId = 0;
+  let sortBy: ProductSortField | undefined;
+  let sortOrder: SortOrder = "asc";
 
   const title = createElement("h1", {
     className: "catalog__title",
-    textContent: category ? category : "Каталог",
+    textContent: category ? category.replace("-", " ") : "Каталог",
   });
 
   const searchInput = createElement("input", {
@@ -27,6 +30,64 @@ export function renderCatalog(category?: string): HTMLElement {
     placeholder: "Поиск товаров...",
     ariaLabel: "Поиск товаров",
   });
+
+  const sortSelect = createElement(
+    "select",
+    {
+      className: "catalog__sort-select",
+      ariaLabel: "Сортировка товаров",
+    },
+    [
+      createElement("option", {
+        value: "",
+        textContent: "Без сортировки",
+      }),
+      createElement("option", {
+        value: "title:asc",
+        textContent: "По названию: А–Я",
+      }),
+      createElement("option", {
+        value: "price:asc",
+        textContent: "Сначала дешевле",
+      }),
+      createElement("option", {
+        value: "price:desc",
+        textContent: "Сначала дороже",
+      }),
+      createElement("option", {
+        value: "rating:desc",
+        textContent: "По рейтингу",
+      }),
+      createElement("option", {
+        value: "discountPercentage:desc",
+        textContent: "По размеру скидки",
+      }),
+    ],
+  );
+
+  sortSelect.addEventListener("change", () => {
+    const [field, order] = sortSelect.value.split(":");
+
+    sortBy = field ? (field as ProductSortField) : undefined;
+
+    sortOrder = order === "desc" ? "desc" : "asc";
+
+    searchController.cancel();
+    debouncedSearch.cancel();
+
+    requestId += 1;
+    currentPage = 1;
+
+    void loadPage(1);
+  });
+
+  const controls = createElement(
+    "div",
+    {
+      className: "catalog__controls",
+    },
+    [searchInput, sortSelect],
+  );
 
   const content = createElement("div", {
     className: "catalog__content",
@@ -40,7 +101,7 @@ export function renderCatalog(category?: string): HTMLElement {
     className: "catalog",
   });
 
-  container.append(title, searchInput, content, pagination);
+  container.append(title, controls, content, pagination);
 
   function showLoading(): void {
     content.replaceChildren(
@@ -207,12 +268,20 @@ export function renderCatalog(category?: string): HTMLElement {
   }
 
   const searchController = createSearchController({
-    search: searchProducts,
+    search: (query, skip, limit, signal, field, order) =>
+      searchProducts(
+        query,
+        skip,
+        limit,
+        signal,
+        undefined,
+        undefined,
+        field,
+        order,
+      ),
 
     onLoading: showLoading,
-
     onSuccess: renderProducts,
-
     onError: showError,
   });
 
@@ -224,7 +293,13 @@ export function renderCatalog(category?: string): HTMLElement {
     if (activeQuery) {
       requestId += 1;
 
-      await searchController.run(activeQuery, skip, PRODUCTS_PER_PAGE);
+      await searchController.run(
+        activeQuery,
+        skip,
+        PRODUCTS_PER_PAGE,
+        sortBy,
+        sortOrder,
+      );
 
       return;
     }
@@ -236,7 +311,15 @@ export function renderCatalog(category?: string): HTMLElement {
     showLoading();
 
     try {
-      const data = await fetchProductCards(category, skip, PRODUCTS_PER_PAGE);
+      const data = await fetchProductCards(
+        category,
+        skip,
+        PRODUCTS_PER_PAGE,
+        undefined,
+        undefined,
+        sortBy,
+        sortOrder,
+      );
 
       if (currentRequestId !== requestId) {
         return;
