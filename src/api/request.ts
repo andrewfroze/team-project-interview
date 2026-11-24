@@ -27,11 +27,11 @@ export async function request<T>(
         signal: requestSignal,
       });
     } catch (error) {
-      if (timeoutController.signal.aborted) {
-        throw new TimeoutError(url, timeout);
-      }
-
       if (error instanceof Error && error.name === "AbortError") {
+        if (!signal || timeoutController.signal.aborted) {
+          throw new TimeoutError(url, timeout);
+        }
+
         throw error;
       }
 
