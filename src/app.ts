@@ -9,6 +9,7 @@ import { createElement } from "./utils/elementFactory";
 import { renderAboutUs } from "./pages/about-us/aboutUs";
 import type { Product } from "./models/product.ts";
 import { addToCart } from "./cart/cartStore.ts";
+import { renderNightMode } from "./components/nightMode/nightMode";
 
 function getAppBasePath(): string {
   const basePath = import.meta.env.BASE_URL;
@@ -101,6 +102,8 @@ async function renderApp(): Promise<void> {
     );
 
     root.replaceChildren(errorPage);
+  } finally {
+    renderNightMode();
   }
 }
 
