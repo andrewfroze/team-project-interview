@@ -320,11 +320,23 @@ export function renderCartItem(
   card.addEventListener(
     "click",
     (event: MouseEvent) => {
-      if (suppressClick) {
-        event.preventDefault();
-        event.stopPropagation();
-        suppressClick = false;
+      if (!suppressClick) {
+        return;
       }
+
+      const target = event.target;
+
+      if (
+        target instanceof Element &&
+        target.closest("button, a, input, select, textarea")
+      ) {
+        return;
+      }
+
+      event.preventDefault();
+      event.stopPropagation();
+
+      suppressClick = false;
     },
     true,
   );

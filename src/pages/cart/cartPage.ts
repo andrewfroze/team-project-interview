@@ -139,6 +139,8 @@ export function renderCartPage(): HTMLElement {
   if (items.length === 0) {
     updateEmptyState();
   } else {
+    list.replaceChildren();
+
     for (const item of items) {
       list.append(renderCartItem(item, handleQuantityChange, handleRemove));
     }
