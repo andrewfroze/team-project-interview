@@ -104,7 +104,9 @@ export function renderCartPage(): HTMLElement {
     }
 
     const shouldRestoreFocus =
-      itemElement?.contains(document.activeElement) ?? false;
+      itemElement && document.activeElement
+        ? itemElement.contains(document.activeElement)
+        : false;
 
     const itemElements = Array.from(
       list.querySelectorAll<HTMLElement>(".cart-item-wrapper"),
