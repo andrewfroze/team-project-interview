@@ -20,18 +20,30 @@ const DEFAULT_SELECT_FIELDS: readonly string[] = Object.freeze([
   "images",
 ]);
 
+export type ProductSortField =
+  "title" | "price" | "rating" | "discountPercentage" | "stock";
+
+export type SortOrder = "asc" | "desc";
+
 export async function fetchProductCards(
   category?: string,
   skip: number = 0,
   limit: number = 20,
   select: readonly string[] = DEFAULT_SELECT_FIELDS,
   timeout: number = DEFAULT_TIMEOUT,
+  sortBy?: ProductSortField,
+  order: SortOrder = "asc",
 ): Promise<ProductCards> {
   const params = new URLSearchParams({
     skip: String(skip),
     limit: String(limit),
     select: select.join(","),
   });
+
+  if (sortBy) {
+    params.set("sortBy", sortBy);
+    params.set("order", order);
+  }
 
   const path = "products" + (category ? `/category/${category}` : "");
 
@@ -72,6 +84,8 @@ export async function searchProducts(
   signal?: AbortSignal,
   select: readonly string[] = DEFAULT_SELECT_FIELDS,
   timeout: number = DEFAULT_TIMEOUT,
+  sortBy?: ProductSortField,
+  order: SortOrder = "asc",
 ): Promise<ProductCards> {
   const params = new URLSearchParams({
     q: query,
@@ -79,6 +93,11 @@ export async function searchProducts(
     limit: String(limit),
     select: select.join(","),
   });
+
+  if (sortBy) {
+    params.set("sortBy", sortBy);
+    params.set("order", order);
+  }
 
   const timeoutSignal = AbortSignal.timeout(timeout);
   const combinedSignal = signal
