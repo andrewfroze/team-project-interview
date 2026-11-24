@@ -36,7 +36,12 @@ export function renderCartPage(): HTMLElement {
       return;
     }
 
-    page.replaceWith(renderCartPage());
+    const itemElement = list.querySelector<HTMLElement>(
+      `[data-product-id="${productId}"]`,
+    );
+
+    itemElement?.remove();
+
     document.dispatchEvent(new Event("cart:updated"));
   };
 

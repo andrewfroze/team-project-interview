@@ -270,12 +270,12 @@ export function renderCartItem(
     card,
   ]);
 
+  wrapper.setAttribute("data-product-id", String(item.id));
+
   wrapper.style.setProperty(
     "--cart-item-action-width",
     `${REMOVE_ACTION_WIDTH}px`,
   );
-
-  wrapper.style.setProperty("--cart-item-action-width", "100px");
 
   return wrapper;
 }
