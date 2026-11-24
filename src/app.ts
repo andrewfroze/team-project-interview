@@ -10,6 +10,7 @@ import { renderAboutUs } from "./pages/about-us/aboutUs";
 import type { Product } from "./models/product.ts";
 import { addToCart } from "./cart/cartStore.ts";
 import { renderNightMode } from "./components/nightMode/nightMode";
+import { reportError } from "./utils/errorHandler";
 
 function getAppBasePath(): string {
   const basePath = import.meta.env.BASE_URL;

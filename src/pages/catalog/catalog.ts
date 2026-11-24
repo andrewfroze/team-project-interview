@@ -7,7 +7,7 @@ import { createSearchController } from "../../utils/searchController";
 import type { ProductSortField, SortOrder } from "../../api/apiClient";
 
 import "./catalog.css";
-import { reportError } from "../../utils/errorHandler.ts";
+import { reportError } from "../../utils/errorHandler";
 
 const PRODUCTS_PER_PAGE = 12;
 const DEBOUNCE_DELAY = 500;
