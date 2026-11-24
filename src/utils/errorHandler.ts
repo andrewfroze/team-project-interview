@@ -1,6 +1,7 @@
 import { showToast } from "../components/toast/toast";
 
 let isInitialized = false;
+const reportedErrors = new WeakSet<object>();
 
 function getUserMessage(error: unknown): string {
   if (!(error instanceof Error)) {
@@ -33,6 +34,14 @@ function getUserMessage(error: unknown): string {
 export function reportError(error: unknown): void {
   if (error instanceof Error && error.name === "AbortError") {
     return;
+  }
+
+  if (typeof error === "object" && error !== null) {
+    if (reportedErrors.has(error)) {
+      return;
+    }
+
+    reportedErrors.add(error);
   }
 
   console.error("[Application Error]", error);
