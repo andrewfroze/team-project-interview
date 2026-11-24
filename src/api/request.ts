@@ -7,23 +7,32 @@ export async function request<T>(
   url: string,
   timeout: number,
   validate: (data: unknown) => data is T,
+  signal?: AbortSignal,
 ): Promise<T> {
-  const controller = new AbortController();
+  const timeoutController = new AbortController();
 
   const timeoutId = setTimeout(() => {
-    controller.abort();
+    timeoutController.abort();
   }, timeout);
+
+  const requestSignal = signal
+    ? AbortSignal.any([signal, timeoutController.signal])
+    : timeoutController.signal;
 
   try {
     let response: Response;
 
     try {
       response = await fetch(url, {
-        signal: controller.signal,
+        signal: requestSignal,
       });
     } catch (error) {
-      if (error instanceof Error && error.name === "AbortError") {
+      if (timeoutController.signal.aborted) {
         throw new TimeoutError(url, timeout);
+      }
+
+      if (error instanceof Error && error.name === "AbortError") {
+        throw error;
       }
 
       if (error instanceof TypeError) {

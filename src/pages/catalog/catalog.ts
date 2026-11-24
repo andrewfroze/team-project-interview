@@ -1,23 +1,31 @@
-import {
-  createButton,
-  createElement,
-  createHeading,
-} from "../../utils/elementFactory";
-import { fetchProductCards } from "../../api/apiClient";
+import { createElement } from "../../utils/elementFactory";
+import { fetchProductCards, searchProducts } from "../../api/apiClient";
+import type { ProductCards } from "../../models/product";
 import { createProductCard } from "../../components/productCard/productCard";
+import { debounce } from "../../utils/debounce";
+import { createSearchController } from "../../utils/searchController";
 
 import "./catalog.css";
 
 const PRODUCTS_PER_PAGE = 12;
+const DEBOUNCE_DELAY = 500;
 
 export function renderCatalog(category?: string): HTMLElement {
-  const catalog = createElement("section", {
-    className: "catalog",
-  });
+  let currentPage = 1;
+  let totalPages = 1;
+  let activeQuery = "";
+  let requestId = 0;
 
   const title = createElement("h1", {
     className: "catalog__title",
-    textContent: "Каталог товаров",
+    textContent: category ? category : "Каталог",
+  });
+
+  const searchInput = createElement("input", {
+    className: "catalog__search-input",
+    type: "search",
+    placeholder: "Поиск товаров...",
+    ariaLabel: "Поиск товаров",
   });
 
   const content = createElement("div", {
@@ -28,87 +36,114 @@ export function renderCatalog(category?: string): HTMLElement {
     className: "catalog__pagination",
   });
 
-  catalog.append(title, content, pagination);
+  const container = createElement("section", {
+    className: "catalog",
+  });
 
-  let currentPage = 1;
-  let totalPages = 1;
-  let requestId = 0;
+  container.append(title, searchInput, content, pagination);
 
-  async function loadPage(page: number): Promise<void> {
-    const currentRequestId = ++requestId;
-
-    currentPage = page;
-
+  function showLoading(): void {
     content.replaceChildren(
       createElement("p", {
-        className: "catalog__loading",
+        className: "catalog__message",
         textContent: "Загрузка товаров...",
       }),
     );
 
     pagination.replaceChildren();
+  }
 
-    try {
-      const skip = (page - 1) * PRODUCTS_PER_PAGE;
+  function showError(): void {
+    content.replaceChildren(
+      createElement("p", {
+        className: "catalog__message catalog__message--error",
+        textContent: "Не удалось загрузить товары. Попробуйте позже.",
+      }),
+    );
 
-      const data = await fetchProductCards(category, skip, PRODUCTS_PER_PAGE);
+    pagination.replaceChildren();
+  }
 
-      if (currentRequestId !== requestId) return;
+  function renderProducts(data: ProductCards): void {
+    totalPages = Math.ceil(data.total / PRODUCTS_PER_PAGE);
 
-      totalPages = Math.ceil(data.total / PRODUCTS_PER_PAGE);
-
-      const cards = data.products.map(createProductCard);
-
-      const grid = createElement("div", { className: "catalog__grid" }, cards);
-
-      if (data.products.length > 0) {
-        const range = createElement("p", {
-          className: "catalog__range",
-          textContent: `Показано ${
-            data.products.length ? skip + 1 : 0
-          }–${skip + data.products.length} из ${data.total} товаров`,
-        });
-
-        content.replaceChildren(range, grid);
-      } else {
-        content.replaceChildren(
-          createHeading("Доступных товаров не найдено. Попробуйте позже.", 2),
-        );
-      }
-
-      renderPagination();
-    } catch {
-      if (currentRequestId !== requestId) return;
-
+    if (data.products.length === 0) {
       content.replaceChildren(
-        createElement("p", {
-          className: "catalog__error",
-          textContent: "Не удалось загрузить товары. Попробуйте позже.",
+        createElement("h2", {
+          className: "catalog__empty",
+          textContent: activeQuery
+            ? "По вашему запросу ничего не найдено"
+            : "Доступных товаров не найдено",
         }),
       );
+
+      pagination.replaceChildren();
+      return;
     }
+
+    const grid = createElement("div", {
+      className: "catalog__grid",
+    });
+
+    grid.append(...data.products.map(createProductCard));
+
+    const start = (currentPage - 1) * PRODUCTS_PER_PAGE + 1;
+    const end = Math.min(currentPage * PRODUCTS_PER_PAGE, data.total);
+
+    const range = createElement("p", {
+      className: "catalog__range",
+      textContent: `Показано ${start}–${end} из ${data.total} товаров`,
+    });
+
+    content.replaceChildren(range, grid);
+
+    renderPagination();
+  }
+
+  function createPageButton(
+    text: string,
+    page: number,
+    className = "",
+    disabled = false,
+  ): HTMLButtonElement {
+    const button = createElement("button", {
+      type: "button",
+      className: `catalog__page-button ${className}`.trim(),
+      textContent: text,
+      disabled,
+    });
+
+    button.addEventListener("click", () => {
+      if (disabled || page === currentPage) {
+        return;
+      }
+
+      void loadPage(page);
+    });
+
+    return button;
   }
 
   function renderPagination(): void {
     pagination.replaceChildren();
 
-    if (totalPages <= 1) return;
+    if (totalPages <= 1) {
+      return;
+    }
 
-    const previousButton = createButton(
-      "←",
-      () => loadPage(currentPage - 1),
-      "catalog__page-button catalog__page-button--arrow",
+    const previousButton = createPageButton(
+      "‹",
+      currentPage - 1,
+      "catalog__page-button--arrow",
+      currentPage === 1,
     );
-
-    previousButton.disabled = currentPage === 1;
-    previousButton.setAttribute("aria-label", "Предыдущая страница");
 
     pagination.append(previousButton);
 
-    const pages = getVisiblePages(currentPage, totalPages);
+    const visiblePages = getVisiblePages(currentPage, totalPages);
 
-    pages.forEach((page) => {
-      if (page === null) {
+    visiblePages.forEach((page) => {
+      if (page === "...") {
         pagination.append(
           createElement("span", {
             className: "catalog__ellipsis",
@@ -119,71 +154,123 @@ export function renderCatalog(category?: string): HTMLElement {
         return;
       }
 
-      const button = createButton(
+      const button = createPageButton(
         String(page),
-        () => loadPage(page),
-        "catalog__page-button",
+        page,
+        page === currentPage ? "catalog__page-button--active" : "",
       );
-
-      const isActive = page === currentPage;
-
-      button.classList.toggle("catalog__page-button--active", isActive);
-      button.disabled = isActive;
-
-      if (isActive) {
-        button.setAttribute("aria-current", "page");
-      }
 
       pagination.append(button);
     });
 
-    const nextButton = createButton(
-      "→",
-      () => loadPage(currentPage + 1),
-      "catalog__page-button catalog__page-button--arrow",
+    const nextButton = createPageButton(
+      "›",
+      currentPage + 1,
+      "catalog__page-button--arrow",
+      currentPage === totalPages,
     );
-
-    nextButton.disabled = currentPage === totalPages;
-    nextButton.setAttribute("aria-label", "Следующая страница");
 
     pagination.append(nextButton);
   }
 
-  loadPage(currentPage);
+  function getVisiblePages(current: number, total: number): (number | "...")[] {
+    if (total <= 7) {
+      return Array.from({ length: total }, (_, index) => index + 1);
+    }
 
-  return catalog;
-}
+    if (current <= 4) {
+      return [1, 2, 3, 4, 5, "...", total];
+    }
 
-function getVisiblePages(
-  currentPage: number,
-  totalPages: number,
-): (number | null)[] {
-  if (totalPages <= 7) {
-    return Array.from({ length: totalPages }, (_, index) => index + 1);
+    if (current >= total - 3) {
+      return [1, "...", total - 4, total - 3, total - 2, total - 1, total];
+    }
+
+    return [1, "...", current - 1, current, current + 1, "...", total];
   }
 
-  if (currentPage <= 2) {
-    return [1, 2, 3, null, totalPages];
+  const searchController = createSearchController({
+    search: searchProducts,
+
+    onLoading: showLoading,
+
+    onSuccess: renderProducts,
+
+    onError: showError,
+  });
+
+  async function loadPage(page: number): Promise<void> {
+    currentPage = page;
+
+    const skip = (page - 1) * PRODUCTS_PER_PAGE;
+
+    if (activeQuery) {
+      requestId += 1;
+
+      await searchController.run(activeQuery, skip, PRODUCTS_PER_PAGE);
+
+      return;
+    }
+
+    searchController.cancel();
+
+    const currentRequestId = ++requestId;
+
+    showLoading();
+
+    try {
+      const data = await fetchProductCards(category, skip, PRODUCTS_PER_PAGE);
+
+      if (currentRequestId !== requestId) {
+        return;
+      }
+
+      renderProducts(data);
+    } catch {
+      if (currentRequestId !== requestId) {
+        return;
+      }
+
+      showError();
+    }
   }
 
-  if (currentPage >= totalPages - 2) {
-    return [
-      1,
-      null,
-      totalPages - 3,
-      totalPages - 2,
-      totalPages - 1,
-      totalPages,
-    ];
-  }
+  const debouncedSearch = debounce((query: string) => {
+    activeQuery = query;
+    currentPage = 1;
 
-  return [
-    1,
-    null,
-    currentPage - 1,
-    currentPage,
-    currentPage + 1,
-    null,
-    totalPages,
-  ];
+    void loadPage(1);
+  }, DEBOUNCE_DELAY);
+
+  searchInput.addEventListener("input", () => {
+    // Отменяем текущий запрос и ожидающий debounce.
+    searchController.cancel();
+    debouncedSearch.cancel();
+
+    // Инвалидируем возможный запрос загрузки каталога.
+    requestId += 1;
+
+    activeQuery = searchInput.value.trim();
+    currentPage = 1;
+
+    if (!activeQuery) {
+      void loadPage(1);
+      return;
+    }
+
+    content.replaceChildren(
+      createElement("p", {
+        className: "catalog__message",
+        textContent: "Ожидание ввода...",
+      }),
+    );
+
+    pagination.replaceChildren();
+
+    debouncedSearch(activeQuery);
+  });
+
+  void loadPage(1);
+
+  return container;
 }

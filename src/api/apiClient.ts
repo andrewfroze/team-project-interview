@@ -62,3 +62,42 @@ export async function fetchCategories(): Promise<ProductCategory[]> {
 
   return data;
 }
+
+export async function searchProducts(
+  query: string,
+  skip: number = 0,
+  limit: number = 20,
+  signal?: AbortSignal,
+  select: string[] = [
+    "id",
+    "title",
+    "category",
+    "price",
+    "discountPercentage",
+    "rating",
+    "stock",
+    "tags",
+    "brand",
+    "images",
+  ],
+  timeout: number = DEFAULT_TIMEOUT,
+): Promise<ProductCards> {
+  const params = new URLSearchParams({
+    q: query,
+    skip: String(skip),
+    limit: String(limit),
+    select: select.join(","),
+  });
+
+  const timeoutSignal = AbortSignal.timeout(timeout);
+  const combinedSignal = signal
+    ? AbortSignal.any([signal, timeoutSignal])
+    : timeoutSignal;
+
+  return request<ProductCards>(
+    `${API_URL}products/search?${params}`,
+    timeout,
+    isProductCards,
+    combinedSignal,
+  );
+}
