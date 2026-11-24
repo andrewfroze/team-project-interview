@@ -11,6 +11,7 @@ import type { Product } from "./models/product.ts";
 import { addToCart } from "./cart/cartStore.ts";
 import { renderNightMode } from "./components/nightMode/nightMode";
 import { reportError } from "./utils/errorHandler";
+import { showToast } from "./components/toast/toast.ts";
 
 function getAppBasePath(): string {
   const basePath = import.meta.env.BASE_URL;
@@ -137,6 +138,7 @@ document.addEventListener("cart:add", (event) => {
   ).detail;
 
   addToCart(product, quantity);
+  showToast("Товар добавлен в корзину!", "success");
 
   document.dispatchEvent(new Event("cart:updated"));
 });
