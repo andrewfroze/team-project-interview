@@ -15,6 +15,9 @@
   --font-primary: "DM Sans", sans-serif;
 
   --container-width: 1200px;
+
+  --night-darkness: 0.99;
+  --flashlight-radius: 300px;
 }
 
 * {

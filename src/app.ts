@@ -9,6 +9,7 @@ import { createElement } from "./utils/elementFactory";
 import { renderAboutUs } from "./pages/about-us/aboutUs";
 import type { Product } from "./models/product.ts";
 import { addToCart } from "./cart/cartStore.ts";
+import { renderNightMode } from "./components/nightMode/nightMode";
 
 function getAppBasePath(): string {
   const basePath = import.meta.env.BASE_URL;
@@ -136,3 +137,5 @@ document.addEventListener("cart:add", (event) => {
 
   document.dispatchEvent(new Event("cart:updated"));
 });
+
+renderNightMode();

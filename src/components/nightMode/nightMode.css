@@ -1,0 +1,92 @@
+.night-mode__toggle {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 100001;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 54px;
+  height: 54px;
+  padding: 12px;
+
+  border: none;
+  border-radius: 50%;
+
+  color: #ffffff;
+  background: #252525;
+  cursor: pointer;
+
+  box-shadow: 0 4px 16px rgb(0 0 0 / 25%);
+
+  transition:
+    background 200ms ease,
+    transform 200ms ease,
+    box-shadow 200ms ease;
+}
+
+.night-mode__toggle:hover {
+  transform: scale(1.08);
+  background: #414141;
+  color: #f5c542;
+}
+
+.night-mode__toggle--active {
+  background: #f5c542;
+  box-shadow: 0 0 20px rgb(245 197 66 / 45%);
+  color: #252525;
+}
+
+.night-mode__icon {
+  display: block;
+  width: 30px;
+  height: 30px;
+
+  background-color: currentColor;
+
+  mask: url("../../assets/flashlight.svg") center / contain no-repeat;
+  -webkit-mask: url("../../assets/flashlight.svg") center / contain no-repeat;
+}
+
+#night-mode-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+
+  pointer-events: none;
+
+  background: radial-gradient(
+    circle var(--flashlight-radius) at var(--flashlight-x, 50%)
+      var(--flashlight-y, 50%),
+    transparent 0%,
+    transparent 35%,
+    rgb(0 0 0 / 0.08) 50%,
+    rgb(0 0 0 / 0.35) 70%,
+    rgb(0 0 0 / 0.75) 85%,
+    rgb(0 0 0 / var(--night-darkness)) 100%
+  );
+}
+
+.night-mode__flashlight {
+  position: absolute;
+
+  width: calc(var(--flashlight-radius) * 2);
+  height: calc(var(--flashlight-radius) * 2);
+
+  border-radius: 50%;
+  pointer-events: none;
+
+  transform: translate(-50%, -50%);
+
+  background: radial-gradient(
+    circle,
+    transparent 0%,
+    transparent 35%,
+    rgb(0 0 0 / 0.08) 50%,
+    rgb(0 0 0 / 0.35) 70%,
+    rgb(0 0 0 / 0.75) 85%,
+    #000 100%
+  );
+}

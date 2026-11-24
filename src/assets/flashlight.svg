@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg"
+     viewBox="0 0 512 512"
+     fill="none"
+     stroke="currentColor"
+     stroke-width="10"
+     stroke-linecap="round"
+     stroke-linejoin="round"
+     role="img"
+     aria-label="Flashlight">
+
+  <!-- Head -->
+  <path d="
+    M310 48
+    L326 31
+    C336 20 351 20 362 31
+    L480 150
+    C493 163 493 179 480 192
+    L464 207
+    Z
+  "/>
+  <path d="M318 61 L450 193"/>
+
+  <!-- Neck and front collar -->
+  <path d="M267 151 L312 53"/>
+  <path d="M354 255 L464 205"/>
+  <path d="
+    M236 180
+    L263 152
+    L360 249
+    L333 276
+    Z
+  "/>
+
+  <!-- Main body -->
+  <path d="
+    M68 370
+    L247 190
+    L320 263
+    L145 440
+  "/>
+
+  <!-- Body details -->
+  <path d="M98 365 L143 320"/>
+  <path d="M150 311 L160 301"/>
+  <path d="M300 187 L355 242"/>
+
+  <!-- Power switch -->
+  <path d="
+    M181 312
+    L204 289
+    C212 281 222 277 230 285
+    C238 293 234 303 226 311
+    L200 336
+    Z
+  "/>
+
+  <!-- Rear end cap -->
+  <path d="
+    M68 370
+    C47 366 30 384 24 405
+    C16 428 22 452 39 470
+    C56 488 81 493 103 483
+    C124 474 140 457 145 440
+  "/>
+  <path d="M48 383 L90 428"/>
+  <path d="M104 444 L132 472"/>
+  <path d="
+    M48 383
+    C39 373 48 361 59 364
+    C65 366 70 372 76 378
+    L145 447
+    C153 455 149 468 139 472
+    C132 475 126 470 120 464
+  "/>
+</svg>
