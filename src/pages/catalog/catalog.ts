@@ -1,4 +1,8 @@
-import { createButton, createElement } from "../../utils/elementFactory";
+import {
+  createButton,
+  createElement,
+  createHeading,
+} from "../../utils/elementFactory";
 import { fetchProductCards } from "../../api/apiClient";
 import { createProductCard } from "../../components/productCard/productCard";
 
@@ -57,14 +61,20 @@ export function renderCatalog(category?: string): HTMLElement {
 
       const grid = createElement("div", { className: "catalog__grid" }, cards);
 
-      const range = createElement("p", {
-        className: "catalog__range",
-        textContent: `Показано ${
-          data.products.length ? skip + 1 : 0
-        }–${skip + data.products.length} из ${data.total} товаров`,
-      });
+      if (data.products.length > 0) {
+        const range = createElement("p", {
+          className: "catalog__range",
+          textContent: `Показано ${
+            data.products.length ? skip + 1 : 0
+          }–${skip + data.products.length} из ${data.total} товаров`,
+        });
 
-      content.replaceChildren(range, grid);
+        content.replaceChildren(range, grid);
+      } else {
+        content.replaceChildren(
+          createHeading("Доступных товаров не найдено. Попробуйте позже.", 2),
+        );
+      }
 
       renderPagination();
     } catch {
