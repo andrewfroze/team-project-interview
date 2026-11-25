@@ -24,12 +24,8 @@
   gap: 10px;
 }
 
-.header__brand {
-  color: #e50010;
-  font-size: 30px;
-  font-weight: 700;
-  letter-spacing: -0.09em;
-  text-decoration: none;
+.brand-logo {
+  height: 30px;
 }
 
 .header__catalog {

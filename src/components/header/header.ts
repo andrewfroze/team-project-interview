@@ -2,9 +2,11 @@ import { getCatalogUrl } from "../../router/router";
 import {
   createContainer,
   createElement,
+  createImage,
   createLink,
 } from "../../utils/elementFactory";
 import { renderCategoriesMenu } from "../categoriesDropdown/categoriesDropdown";
+import icon from "../../assets/icon.png";
 
 import "./header.css";
 import { renderCartHeaderIcon } from "../../pages/cart/components/headerIcon/cartHeader.ts";
@@ -14,7 +16,14 @@ export async function renderHeader(): Promise<HTMLElement> {
     className: "header",
   });
 
-  const brand = createLink("A&M", import.meta.env.BASE_URL, "header__brand");
+  const brand = createElement(
+    "a",
+    {
+      href: import.meta.env.BASE_URL,
+      className: "header__brand",
+    },
+    [createImage(icon, "logo", "brand-logo")],
+  );
 
   const catalogLink = createLink("Каталог", getCatalogUrl(), "header__catalog");
 
