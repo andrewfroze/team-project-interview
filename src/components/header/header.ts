@@ -7,6 +7,7 @@ import {
 } from "../../utils/elementFactory";
 import { renderCategoriesMenu } from "../categoriesDropdown/categoriesDropdown";
 import icon from "../../assets/icon.png";
+import { handleNightModeLogoClick } from "../nightMode/nightMode";
 
 import "./header.css";
 import { renderCartHeaderIcon } from "../../pages/cart/components/headerIcon/cartHeader.ts";
@@ -24,6 +25,8 @@ export async function renderHeader(): Promise<HTMLElement> {
     },
     [createImage(icon, "logo", "brand-logo")],
   );
+
+  brand.addEventListener("click", handleNightModeLogoClick);
 
   const catalogLink = createLink("Каталог", getCatalogUrl(), "header__catalog");
 

@@ -9,9 +9,13 @@ import { createElement } from "./utils/elementFactory";
 import { renderAboutUs } from "./pages/about-us/aboutUs";
 import type { Product } from "./models/product.ts";
 import { addToCart } from "./cart/cartStore.ts";
-import { renderNightMode } from "./components/nightMode/nightMode";
+import {
+  renderNightMode,
+  isEasterEggWarningActive,
+  triggerEasterEggJumpscare,
+} from "./components/nightMode/nightMode";
 import { reportError } from "./utils/errorHandler";
-import { showToast } from "./components/toast/toast.ts";
+import { showToast } from "./components/toast/toast";
 
 function getAppBasePath(): string {
   const basePath = import.meta.env.BASE_URL;
@@ -124,6 +128,27 @@ function scrollToHash(): void {
     block: "start",
   });
 }
+
+document.addEventListener(
+  "click",
+  (event: MouseEvent) => {
+    if (!isEasterEggWarningActive()) return;
+
+    const target = event.target;
+
+    if (!(target instanceof Element)) return;
+
+    const link = target.closest<HTMLAnchorElement>("a[href]");
+
+    if (!link || link.origin !== window.location.origin) return;
+
+    event.preventDefault();
+    event.stopImmediatePropagation();
+
+    triggerEasterEggJumpscare();
+  },
+  true,
+);
 
 renderApp().catch((error: unknown) => {
   reportError(error);

@@ -1,11 +1,13 @@
 import "./nightMode.css";
 
 import { createButton, createElement } from "../../utils/elementFactory";
+import jumpscareImage from "../../assets/jumpscare.png";
 
 const STORAGE_KEY = "night-mode-enabled";
 const OVERLAY_ID = "night-mode-overlay";
 const BUTTON_ID = "night-mode-toggle";
 const POSITION_KEY = "night-mode-position";
+const EASTER_EGG_ID = "night-mode-easter-egg";
 
 interface FlashlightPosition {
   x: number;
@@ -16,13 +18,27 @@ interface NightModeOptions {
   smoothing?: number;
 }
 
+type EasterEggStage = "idle" | "warning" | "jumpscare";
+
 const DEFAULT_OPTIONS: Required<NightModeOptions> = {
   smoothing: 0.12,
 };
 
+const whisperAudio = new Audio(
+  new URL("../../assets/whisper.mp3", import.meta.url).href,
+);
+const screamAudio = new Audio(
+  new URL("../../assets/scream.mp3", import.meta.url).href,
+);
+
+whisperAudio.volume = 0.4;
+screamAudio.volume = 1;
+
 let isEnabled = false;
 let animationFrame = 0;
 let cleanup: (() => void) | null = null;
+
+let easterEggStage: EasterEggStage = "idle";
 
 export function renderNightMode(): void {
   if (document.getElementById(BUTTON_ID)) return;
@@ -74,6 +90,153 @@ function toggleNightMode(): void {
   );
 }
 
+export function handleNightModeLogoClick(event: MouseEvent): void {
+  if (!isEnabled) return;
+
+  event.preventDefault();
+  event.stopPropagation();
+
+  if (easterEggStage !== "idle") return;
+
+  easterEggStage = "warning";
+
+  showEasterEggMessage();
+}
+
+export function isEasterEggWarningActive(): boolean {
+  return isEnabled && easterEggStage === "warning";
+}
+
+export function triggerEasterEggJumpscare(): void {
+  if (!isEasterEggWarningActive()) return;
+
+  easterEggStage = "jumpscare";
+
+  showJumpscare();
+}
+
+function handleNavigationDuringEasterEgg(event: MouseEvent): void {
+  if (!isEnabled || easterEggStage !== "warning") return;
+
+  const target = event.target;
+
+  if (!(target instanceof Element)) return;
+
+  const link = target.closest<HTMLAnchorElement>("a[href]");
+
+  if (!link) return;
+
+  if (
+    link.origin !== window.location.origin ||
+    link.target === "_blank" ||
+    link.hasAttribute("download")
+  ) {
+    return;
+  }
+
+  if (
+    link.pathname === window.location.pathname &&
+    link.search === window.location.search &&
+    link.hash
+  ) {
+    return;
+  }
+
+  event.preventDefault();
+  event.stopImmediatePropagation();
+
+  easterEggStage = "jumpscare";
+
+  showJumpscare();
+}
+
+function showEasterEggMessage(): void {
+  const message = createElement("div", {
+    id: EASTER_EGG_ID,
+    className: "night-mode__easter-egg night-mode__easter-egg--message",
+    textContent: "DON'T LEAVE",
+  });
+
+  document.body.append(message);
+
+  whisperAudio.currentTime = 0;
+
+  whisperAudio.play().catch((error: unknown) => {
+    console.warn("Не удалось воспроизвести шёпот:", error);
+  });
+
+  whisperAudio.addEventListener(
+    "ended",
+    () => {
+      message.remove();
+      resetEasterEgg();
+    },
+    {
+      once: true,
+    },
+  );
+}
+
+function showJumpscare(): void {
+  document.getElementById(EASTER_EGG_ID)?.remove();
+
+  const image = createElement("img", {
+    src: jumpscareImage,
+    alt: "Скример",
+    className: "night-mode__jumpscare",
+  });
+
+  const container = createElement("div", {
+    id: EASTER_EGG_ID,
+    className: "night-mode__easter-egg night-mode__easter-egg--jumpscare",
+  });
+
+  container.append(image);
+  document.body.append(container);
+
+  whisperAudio.pause();
+  whisperAudio.currentTime = 0;
+
+  screamAudio.currentTime = 0;
+
+  screamAudio.addEventListener("ended", finishJumpscare, {
+    once: true,
+  });
+
+  void screamAudio.play().catch((error: unknown) => {
+    console.warn("Не удалось воспроизвести звук скримера:", error);
+    finishJumpscare();
+  });
+}
+
+function finishJumpscare(): void {
+  if (!isEnabled) return;
+
+  disableNightMode();
+
+  isEnabled = false;
+
+  localStorage.setItem(STORAGE_KEY, "false");
+
+  const button = document.getElementById(BUTTON_ID);
+
+  button?.classList.remove("night-mode__toggle--active");
+  button?.setAttribute("aria-pressed", "false");
+  button?.setAttribute("aria-label", "Включить ночной режим");
+}
+
+function resetEasterEgg(): void {
+  whisperAudio.pause();
+  whisperAudio.currentTime = 0;
+  document.getElementById(EASTER_EGG_ID)?.remove();
+
+  screamAudio.removeEventListener("ended", finishJumpscare);
+  screamAudio.pause();
+  screamAudio.currentTime = 0;
+
+  easterEggStage = "idle";
+}
+
 function enableNightMode(options: NightModeOptions = {}): void {
   const settings = {
     ...DEFAULT_OPTIONS,
@@ -108,11 +271,8 @@ function enableNightMode(options: NightModeOptions = {}): void {
   let currentY = targetY;
 
   const handleResize = (): void => {
-    targetX = Math.min(targetX, window.innerWidth);
-    targetY = Math.min(targetY, window.innerHeight);
-
-    currentX = targetX;
-    currentY = targetY;
+    currentX = Math.min(targetX, window.innerWidth);
+    currentY = Math.min(targetY, window.innerHeight);
   };
 
   const updateTarget = (event: PointerEvent): void => {
@@ -131,6 +291,8 @@ function enableNightMode(options: NightModeOptions = {}): void {
   document.addEventListener("pointermove", updateTarget);
   window.addEventListener("resize", handleResize);
 
+  document.addEventListener("click", handleNavigationDuringEasterEgg, true);
+
   const animate = (): void => {
     currentX += (targetX - currentX) * settings.smoothing;
     currentY += (targetY - currentY) * settings.smoothing;
@@ -148,12 +310,21 @@ function enableNightMode(options: NightModeOptions = {}): void {
     window.removeEventListener("resize", handleResize);
 
     cancelAnimationFrame(animationFrame);
+
+    document.removeEventListener(
+      "click",
+      handleNavigationDuringEasterEgg,
+      true,
+    );
+
     cleanup = null;
   };
 }
 
 function disableNightMode(): void {
   cleanup?.();
+
+  resetEasterEgg();
 
   document.getElementById(OVERLAY_ID)?.remove();
 }
