@@ -1,7 +1,7 @@
 import "./nightMode.css";
 
 import { createButton, createElement } from "../../utils/elementFactory";
-import jumpscareImage from "../../assets/jumpscare.png";
+import jumpscareImage from "../../assets/jumpscare.webp";
 
 const STORAGE_KEY = "night-mode-enabled";
 const OVERLAY_ID = "night-mode-overlay";
@@ -39,6 +39,27 @@ let animationFrame = 0;
 let cleanup: (() => void) | null = null;
 
 let easterEggStage: EasterEggStage = "idle";
+
+let jumpscareImageElement: HTMLImageElement | null = null;
+let jumpscareImagePromise: Promise<void> | null = null;
+
+function preloadJumpscareImage(): Promise<void> {
+  if (!jumpscareImagePromise) {
+    const image = new Image();
+
+    image.decoding = "async";
+    image.fetchPriority = "high";
+    image.src = jumpscareImage;
+
+    jumpscareImageElement = image;
+
+    jumpscareImagePromise = image.decode().catch((error: unknown) => {
+      console.warn("Не удалось декодировать изображение скримера:", error);
+    });
+  }
+
+  return jumpscareImagePromise;
+}
 
 export function renderNightMode(): void {
   if (document.getElementById(BUTTON_ID)) return;
@@ -180,18 +201,11 @@ function showEasterEggMessage(): void {
 function showJumpscare(): void {
   document.getElementById(EASTER_EGG_ID)?.remove();
 
-  const image = createElement("img", {
-    src: jumpscareImage,
-    alt: "Скример",
-    className: "night-mode__jumpscare",
-  });
-
   const container = createElement("div", {
     id: EASTER_EGG_ID,
     className: "night-mode__easter-egg night-mode__easter-egg--jumpscare",
   });
 
-  container.append(image);
   document.body.append(container);
 
   whisperAudio.pause();
@@ -206,6 +220,21 @@ function showJumpscare(): void {
   void screamAudio.play().catch((error: unknown) => {
     console.warn("Не удалось воспроизвести звук скримера:", error);
     finishJumpscare();
+  });
+
+  void preloadJumpscareImage().then(() => {
+    if (
+      easterEggStage !== "jumpscare" ||
+      !container.isConnected ||
+      !jumpscareImageElement
+    ) {
+      return;
+    }
+
+    jumpscareImageElement.className = "night-mode__jumpscare";
+    jumpscareImageElement.alt = "Скример";
+
+    container.append(jumpscareImageElement);
   });
 }
 
@@ -238,6 +267,8 @@ function resetEasterEgg(): void {
 }
 
 function enableNightMode(options: NightModeOptions = {}): void {
+  preloadJumpscareImage();
+
   const settings = {
     ...DEFAULT_OPTIONS,
     ...options,
